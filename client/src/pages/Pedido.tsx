@@ -1,8 +1,8 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "wouter";
-import { ArrowLeft, Check, Flame, Store, Truck, PartyPopper } from "lucide-react";
+import { ArrowLeft, BellRing, Check, Flame, Store, Truck, PartyPopper } from "lucide-react";
 import { AppHeader } from "@/components/AppLayout";
-import { formatBRL, STATUS_LABELS, STATUS_EMOJI, TRACKING_STEPS } from "@/lib/brand";
+import { formatBRL, STATUS_LABELS, TRACKING_STEPS } from "@/lib/brand";
 import { getOrderByCode, groupOrderItems, subscribeToOrders, type LocalOrder } from "@/lib/localOrders";
 
 const PICKUP_TRACKING_STEPS = ["new", "accepted", "preparing", "ready", "finished"] as const;
@@ -17,13 +17,15 @@ const STEP_ICONS: Record<string, typeof Check> = {
 };
 
 const STEP_MESSAGES: Record<string, string> = {
-  new: "Recebemos seu pedido! O restaurante já está de olho 🔍",
-  accepted: "Pedido aceito! A chapa vai esquentar 🔥",
-  preparing: "Seu churrasco está na brasa! Cheiro bom chegando 👨‍🍳",
-  ready: "Tudo pronto! Embalando seu pedido 📦",
-  delivering: "Seu pedido saiu para entrega! Vem aí 🏍️",
-  finished: "Entregue! Bom apetite e volte sempre ❤️",
+  new: "Recebemos seu pedido. O restaurante ja esta acompanhando.",
+  accepted: "Pedido aceito. A preparacao ja vai comecar.",
+  preparing: "Seu pedido esta em preparo.",
+  ready: "Tudo pronto. Seu pedido ja pode ser retirado ou entregue.",
+  delivering: "Seu pedido saiu para entrega.",
+  finished: "Entregue. Bom apetite e volte sempre.",
 };
+
+const READY_ALERT_KEY = "churraspao-ready-alert:";
 
 export default function Pedido() {
   const { code } = useParams<{ code: string }>();
@@ -46,12 +48,39 @@ export default function Pedido() {
   }, [code]);
 
   useEffect(() => {
-    if (order && order.status === "finished") document.title = "Entregue! | CHURRASPÃO E CIA";
+    if (order && order.status === "finished") document.title = "Entregue! | CHURRASPAO E CIA";
+  }, [order]);
+
+  useEffect(() => {
+    if (!order || order.status !== "ready" || typeof window === "undefined") return;
+
+    const key = `${READY_ALERT_KEY}${order.code}`;
+    document.title = "Pedido pronto! | CHURRASPAO E CIA";
+
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+
+    if ("Notification" in window) {
+      if (Notification.permission === "granted") {
+        new Notification("Seu pedido esta pronto", {
+          body: `Pedido ${order.code} pronto para retirada ou entrega.`,
+        });
+      } else if (Notification.permission === "default") {
+        void Notification.requestPermission().then((permission) => {
+          if (permission === "granted") {
+            new Notification("Seu pedido esta pronto", {
+              body: `Pedido ${order.code} pronto para retirada ou entrega.`,
+            });
+          }
+        });
+      }
+    }
   }, [order]);
 
   const trackingSteps = order?.deliveryType === "pickup" ? PICKUP_TRACKING_STEPS : TRACKING_STEPS;
   const statusIdx = Math.max(0, trackingSteps.indexOf((order?.status ?? "new") as (typeof trackingSteps)[number]));
   const isFinished = order?.status === "finished";
+  const isReady = order?.status === "ready";
   const isCancelled = order?.status === "cancelled";
   const orderItems = groupOrderItems(Array.isArray(order?.itemsJson) ? order.itemsJson : []);
 
@@ -69,19 +98,34 @@ export default function Pedido() {
       <div className="mx-auto w-full max-w-[430px] px-3 pt-4 sm:px-4 flex flex-col gap-5">
         {!order && (
           <div className="text-center py-16">
-            <p className="text-5xl mb-4">🤔</p>
-            <p className="font-display text-lg font-semibold">Pedido não encontrado</p>
-            <p className="text-sm text-muted-foreground mt-2">Verifique o código ou faça um novo pedido.</p>
-            <Link href="/cardapio" className="mt-4 inline-block text-brand-bright font-semibold hover:underline">Ir ao cardápio</Link>
+            <p className="font-display text-lg font-semibold">Pedido nao encontrado</p>
+            <p className="text-sm text-muted-foreground mt-2">Verifique o codigo ou faca um novo pedido.</p>
+            <Link href="/cardapio" className="mt-4 inline-block text-brand-bright font-semibold hover:underline">Ir ao cardapio</Link>
           </div>
         )}
         {order && (
           <>
             {/* Status hero */}
+            {isReady && (
+              <div className="ember-glow rounded-3xl border-2 border-brand bg-gradient-to-br from-brand/25 to-[#0B0B0B] p-5">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand text-white">
+                    <BellRing className="h-6 w-6" />
+                  </span>
+                  <div>
+                    <p className="font-display text-2xl font-bold text-white">Seu pedido esta pronto</p>
+                    <p className="mt-1 text-sm text-white/80">
+                      Pode retirar no balcao ou aguarde a entrega, conforme o tipo do pedido.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className={`rounded-3xl p-6 ${isCancelled ? "bg-card border-2 border-destructive" : isFinished ? "ember-glow bg-gradient-to-br from-[#2a1200] to-[#0B0B0B] border border-brand/40" : "bg-card border border-brand/40"}`}>
-              <p className="text-5xl mb-3">{STATUS_EMOJI[order.status] ?? "🔥"}</p>
+              <p className="mb-3 font-display text-sm font-bold uppercase text-brand-bright">{STATUS_LABELS[order.status] ?? "Status do pedido"}</p>
               <h1 className="font-display text-2xl font-bold">{isCancelled ? "Pedido cancelado" : STATUS_LABELS[order.status] ?? "Novo pedido"}</h1>
-              <p className="text-sm text-muted-foreground mt-1.5">{isCancelled ? "Entre em contato com o restaurante para mais informações." : STEP_MESSAGES[order.status as string]}</p>
+              <p className="text-sm text-muted-foreground mt-1.5">{isCancelled ? "Entre em contato com o restaurante para mais informacoes." : STEP_MESSAGES[order.status as string]}</p>
               {!isCancelled && (
                 <div className="mt-4 h-1.5 rounded-full bg-secondary overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-brand to-brand-bright transition-all duration-500" style={{ width: `${((statusIdx + 1) / trackingSteps.length) * 100}%` }} />
@@ -115,7 +159,7 @@ export default function Pedido() {
             {/* Detalhes */}
             <div className="rounded-2xl bg-card border border-border p-5 flex flex-col gap-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Código do pedido</span>
+                <span className="text-muted-foreground">Codigo do pedido</span>
                 <span className="font-mono font-bold text-brand-bright">{order.code}</span>
               </div>
               <div className="flex justify-between text-sm">
@@ -128,20 +172,20 @@ export default function Pedido() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Tipo</span>
-                <span>{order.deliveryType === "delivery" ? "🚚 Entrega" : "🏪 Retirada"}</span>
+                <span>{order.deliveryType === "delivery" ? "Entrega" : "Retirada"}</span>
               </div>
               {order.deliveryType === "delivery" && order.addressLine && (
                 <div className="flex justify-between text-sm gap-4">
-                  <span className="text-muted-foreground shrink-0">Endereço</span>
+                  <span className="text-muted-foreground shrink-0">Endereco</span>
                   <span className="text-right">{order.addressLine}{order.addressRef ? ` — ${order.addressRef}` : ""}</span>
                 </div>
               )}
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Pagamento</span>
-                <span className="capitalize">{order.paymentMethod === "pix" ? "PIX" : order.paymentMethod === "card" ? "Cartão" : "Dinheiro"}{order.changeFor ? ` (troco: ${order.changeFor})` : ""}</span>
+                <span className="capitalize">{order.paymentMethod === "pix" ? "PIX" : order.paymentMethod === "card" ? "Cartao" : "Dinheiro"}{order.changeFor ? ` (troco: ${order.changeFor})` : ""}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Horário</span>
+                <span className="text-muted-foreground">Horario</span>
                 <span>{new Date(order.createdAt).toLocaleString("pt-BR")}</span>
               </div>
               <div className="border-t border-border pt-3 flex justify-between items-baseline">
@@ -152,9 +196,9 @@ export default function Pedido() {
 
             {/* Itens */}
             <div className="rounded-2xl bg-card border border-border p-5 flex flex-col gap-2.5">
-              <p className="font-display font-semibold text-sm">🍽️ O que você pediu</p>
+              <p className="font-display font-semibold text-sm">O que voce pediu</p>
               {orderItems.length === 0 && (
-                <p className="text-sm text-muted-foreground">Itens não encontrados neste pedido.</p>
+                <p className="text-sm text-muted-foreground">Itens nao encontrados neste pedido.</p>
               )}
               {orderItems.map((item) => (
                 <div key={`${item.productId}-${item.variationId ?? "base"}-${item.productName}`} className="flex justify-between text-sm gap-3">
@@ -170,7 +214,7 @@ export default function Pedido() {
 
             {isFinished && (
               <Link href="/" className="btn-press rounded-2xl bg-brand py-3.5 text-center font-display font-bold text-white uppercase tracking-wide hover:bg-brand-bright transition-colors">
-                Pedir de novo 🔥
+                Pedir de novo
               </Link>
             )}
           </>
