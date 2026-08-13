@@ -229,7 +229,7 @@ export async function createOrder(input: OrderInput) {
 
   if (error) {
     console.error("[Churraspao] A Supabase recusou o pedido:", error);
-    throw new Error(error.message || "Nao foi possivel salvar o pedido online.");
+    throw new Error([error.message, error.details, error.hint, error.code].filter(Boolean).join(" | ") || "Nao foi possivel salvar o pedido online.");
   }
 
   dispatchOrderUpdate();
