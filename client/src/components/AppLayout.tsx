@@ -8,10 +8,10 @@ import { getBrandLogo } from "@/lib/localCatalog";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { path: "/inicio", label: "Início", icon: Home },
-  { path: "/cardapio", label: "Cardápio", icon: UtensilsCrossed },
+  { path: "/inicio", label: "Inicio", icon: Home },
+  { path: "/cardapio", label: "Cardapio", icon: UtensilsCrossed },
   { path: "/cardapio", label: "Categorias", icon: Tag },
-  { path: "/ofertas", label: "Promoções", icon: Ticket },
+  { path: "/ofertas", label: "Promocoes", icon: Ticket },
   { path: "/pedidos", label: "Meus pedidos", icon: Flame },
   { path: "/perfil", label: "Favoritos", icon: User },
   { path: "/perfil", label: "Minha conta", icon: User },
@@ -46,9 +46,9 @@ export function ClientDrawer({ open, onClose }: { open: boolean; onClose: () => 
   return (
     <>
       {open && <button aria-label="Fechar menu" className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" onClick={onClose} />}
-      <aside className={cn("fixed bottom-0 left-0 top-0 z-50 w-[82vw] max-w-[320px] border-r border-border bg-card p-4 shadow-2xl shadow-black/70 transition-transform duration-200", open ? "translate-x-0" : "-translate-x-full")}>
+      <aside className={cn("fixed bottom-0 left-0 top-0 z-50 w-[82vw] max-w-[320px] overflow-y-auto border-r border-border bg-[#111] p-4 text-white shadow-2xl shadow-black/70 transition-transform duration-200", open ? "translate-x-0" : "-translate-x-full")}>
         <div className="flex items-center gap-3">
-          <img src={logo} alt="CHURRASPÃO E CIA" className="h-14 w-14 rounded-full object-cover ring-2 ring-brand/60" />
+          <img src={logo} alt="CHURRASPAO E CIA" className="h-14 w-14 rounded-full object-contain ring-2 ring-brand/60" />
           <div className="min-w-0 flex-1">
             <p className="font-display text-base font-bold leading-tight">{BRAND.name}</p>
             <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-bright">App oficial</p>
@@ -93,18 +93,18 @@ export function AppHeader({ title, subtitle }: { title?: string; subtitle?: stri
 
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-[430px] items-center gap-3 px-4 py-3 md:max-w-5xl">
-          <button onClick={() => setMenuOpen(true)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-card" aria-label="Abrir menu">
+      <header className="sticky top-0 z-30 border-b border-border bg-[#0B0B0B]/95 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-[430px] items-center gap-2 px-3 py-2.5 md:max-w-5xl">
+          <button onClick={() => setMenuOpen(true)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card" aria-label="Abrir menu">
             <Menu className="h-5 w-5" />
           </button>
-          <img src={logo} alt="CHURRASPÃO E CIA" className="h-11 w-11 rounded-full object-cover ring-2 ring-brand/60" />
+          <img src={logo} alt="CHURRASPAO E CIA" className="h-10 w-10 shrink-0 rounded-full object-contain ring-1 ring-brand/60" />
           <div className="min-w-0 flex-1">
             <p className="truncate font-display text-sm font-bold leading-tight">{title ?? BRAND.name}</p>
             <p className="truncate text-[11px] text-muted-foreground">{subtitle ?? "Entrega em toda a cidade"}</p>
           </div>
-          <Link href="/perfil" className={cn("text-xs font-semibold", isAuthenticated ? "text-brand-bright" : "text-muted-foreground")} onClick={(event) => !isAuthenticated && event.preventDefault()}>
-            {isAuthenticated ? `Olá, ${user?.name?.split(" ")[0] ?? "Rafael"}` : "Entrar"}
+          <Link href="/perfil" className={cn("shrink-0 text-xs font-semibold", isAuthenticated ? "text-brand-bright" : "text-muted-foreground")} onClick={(event) => !isAuthenticated && event.preventDefault()}>
+            {isAuthenticated ? `Ola, ${user?.name?.split(" ")[0] ?? "Rafael"}` : "Entrar"}
           </Link>
         </div>
       </header>
@@ -135,10 +135,10 @@ export function SplashScreen() {
     <div className="charcoal-texture fixed inset-0 z-[60] flex flex-col items-center justify-center gap-5 bg-[#0B0B0B] px-8">
       <div className="relative">
         <span className="pulse-ember absolute -inset-5 rounded-full bg-brand/20 blur-2xl" />
-        <img src={logo} alt="CHURRASPÃO E CIA" className="ember-glow fade-up relative h-36 w-36 rounded-full object-cover" />
+        <img src={logo} alt="CHURRASPAO E CIA" className="ember-glow fade-up relative h-36 w-36 rounded-full object-contain" />
       </div>
       <h1 className="fade-up font-display text-3xl font-bold tracking-wide">{BRAND.name}</h1>
-      <p className="fade-up text-sm font-semibold text-brand-bright">Seu pedido começa aqui</p>
+      <p className="fade-up text-sm font-semibold text-brand-bright">Seu pedido comeca aqui</p>
     </div>
   );
 }
