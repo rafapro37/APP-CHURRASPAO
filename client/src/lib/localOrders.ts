@@ -283,6 +283,15 @@ export async function updateOrderStatus(id: number | string, status: LocalOrderS
     console.error("[Churraspao] Nao foi possivel atualizar status na Supabase:", error);
     updateLocalOrderStatus(id, status);
   }
+  if (!error && status === "ready") {
+    void fetch("/api/send-ready-push", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId: id }),
+    }).catch((pushError) => {
+      console.warn("[Churraspao] Pedido pronto, mas push externo nao foi enviado:", pushError);
+    });
+  }
   dispatchOrderUpdate();
 }
 

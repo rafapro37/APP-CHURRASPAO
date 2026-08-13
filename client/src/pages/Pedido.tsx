@@ -4,6 +4,7 @@ import { ArrowLeft, BellRing, Check, Flame, Store, Truck, PartyPopper } from "lu
 import { AppHeader } from "@/components/AppLayout";
 import { formatBRL, STATUS_LABELS, TRACKING_STEPS } from "@/lib/brand";
 import { getOrderByCode, groupOrderItems, subscribeToOrders, type LocalOrder } from "@/lib/localOrders";
+import { showReadyNotification, subscribeCurrentDevice } from "@/lib/pushNotifications";
 
 const PICKUP_TRACKING_STEPS = ["new", "accepted", "preparing", "ready", "finished"] as const;
 
@@ -72,6 +73,11 @@ export default function Pedido() {
   }, [order]);
 
   useEffect(() => {
+    if (!order?.code) return;
+    void subscribeCurrentDevice(order.code);
+  }, [order?.code]);
+
+  useEffect(() => {
     if (!order || order.status !== "ready" || typeof window === "undefined") return;
 
     const key = `${READY_ALERT_KEY}${order.code}`;
@@ -82,6 +88,7 @@ export default function Pedido() {
 
     vibrateReadyAlert();
     void requestNotificationPermissionSafely();
+    void showReadyNotification("Seu pedido está pronto", `Pedido ${order.code} pronto para retirada ou entrega.`, `/pedido/${order.code}`);
   }, [order]);
 
   const trackingSteps = order?.deliveryType === "pickup" ? PICKUP_TRACKING_STEPS : TRACKING_STEPS;

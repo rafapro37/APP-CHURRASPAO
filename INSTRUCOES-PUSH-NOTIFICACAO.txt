@@ -1,0 +1,56 @@
+PASSO 1 - RODAR SQL NO SUPABASE
+
+Abra o Supabase > SQL Editor.
+Cole e rode o conteudo do arquivo:
+
+supabase-push-notificacoes.sql
+
+
+PASSO 2 - GERAR AS CHAVES DE NOTIFICACAO
+
+No terminal, dentro de D:\CHURRASPAO, rode:
+
+pnpm install
+pnpm exec web-push generate-vapid-keys
+
+Ele vai mostrar duas chaves:
+
+Public Key
+Private Key
+
+
+PASSO 3 - COLOCAR AS CHAVES NA VERCEL
+
+Vercel > Projeto app-churraspao > Settings > Environment Variables.
+
+Adicionar:
+
+NEXT_PUBLIC_VAPID_PUBLIC_KEY = cole a Public Key
+VAPID_PRIVATE_KEY = cole a Private Key
+VAPID_SUBJECT = mailto:seu-email@email.com
+
+Importante:
+NEXT_PUBLIC_VAPID_PUBLIC_KEY precisa ser a chave publica.
+VAPID_PRIVATE_KEY precisa ser a chave privada.
+
+
+PASSO 4 - SUBIR PARA O GITHUB
+
+cd /d D:\CHURRASPAO
+git add .
+git commit -m "adiciona notificacao push real"
+git push
+
+
+PASSO 5 - TESTE NO CELULAR
+
+1. Abra o app online no Chrome do celular.
+2. Faca um pedido.
+3. Permita as notificacoes quando o navegador pedir.
+4. Abra a cozinha.
+5. Mude o pedido para Pronto.
+6. A notificacao deve aparecer no celular, mesmo fora da tela do app.
+
+Observacao:
+No Android/Chrome funciona melhor.
+No iPhone, normalmente precisa adicionar o app na tela inicial antes de permitir notificacao push.

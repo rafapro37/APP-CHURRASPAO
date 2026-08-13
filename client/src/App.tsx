@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { CartProvider } from "./contexts/CartContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { subscribeToCatalog, syncCatalogFromCloud } from "@/lib/localCatalog";
+import { registerServiceWorker } from "@/lib/pushNotifications";
 import { useEffect } from "react";
 
 // Rotas do app do cliente
@@ -78,6 +79,14 @@ function CatalogCloudSync() {
   return null;
 }
 
+function PwaSetup() {
+  useEffect(() => {
+    void registerServiceWorker();
+  }, []);
+
+  return null;
+}
+
 function App() {
   return (
     <ErrorBoundary>
@@ -85,6 +94,7 @@ function App() {
         <TooltipProvider>
           <CartProvider>
             <CatalogCloudSync />
+            <PwaSetup />
             <Toaster />
             <Router />
           </CartProvider>

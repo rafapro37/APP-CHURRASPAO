@@ -9,6 +9,7 @@ import { DELIVERY_FEE, FREE_DELIVERY_THRESHOLD, formatBRL, formatPhone } from "@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { registerProductSales } from "@/lib/localCatalog";
 import { createOrder } from "@/lib/localOrders";
+import { subscribeCurrentDevice } from "@/lib/pushNotifications";
 
 type PaymentMethod = "pix" | "card" | "cash" | "online";
 
@@ -96,6 +97,7 @@ export default function Checkout() {
         itemsJson,
       });
       registerProductSales(items.map((item) => ({ productId: item.productId, quantity: item.quantity })));
+      void subscribeCurrentDevice(order.code);
       clear();
       toast.success("Pedido recebido");
       navigate(`/pedido/${order.code}`);
