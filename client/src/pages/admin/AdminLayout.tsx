@@ -12,9 +12,9 @@ import { useState } from "react";
 const ADMIN_MENU = [
   { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { path: "/admin/pedidos", label: "Pedidos", icon: Flame },
-  { path: "/admin/produtos", label: "Cardápio & Produtos", icon: UtensilsCrossed },
+  { path: "/admin/produtos", label: "Produtos", icon: UtensilsCrossed },
   { path: "/admin/categorias", label: "Categorias", icon: ListOrdered },
-  { path: "/admin/promocoes", label: "Promoções", icon: Ticket },
+  { path: "/admin/promocoes", label: "Promocoes", icon: Ticket },
   { path: "/admin/cupons", label: "Cupons", icon: Wallet },
   { path: "/admin/clientes", label: "Clientes", icon: Users },
 ];
@@ -28,32 +28,42 @@ function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
-export default function AdminLayout({ title, subtitle, children }: { title?: string; subtitle?: string; children: React.ReactNode }) {
+function AdminMenu() {
   const [location] = useLocation();
+
+  return (
+    <nav className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-col md:overflow-visible md:px-2 md:py-1">
+      {ADMIN_MENU.map((item) => {
+        const isActive = item.path === "/admin" ? location === "/admin" : location.startsWith(item.path);
+        const Icon = item.icon;
+        return (
+          <Link key={item.path} href={item.path} className={`flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-3 text-xs font-semibold transition-colors md:h-auto md:rounded-lg md:py-2 md:text-sm ${isActive ? "bg-brand text-white" : "bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-foreground"}`}>
+            <Icon className="h-4 w-4" />
+            {item.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+export default function AdminLayout({ title, subtitle, children }: { title?: string; subtitle?: string; children: React.ReactNode }) {
   const [logo, setLogo] = useState(getBrandLogo);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground md:flex-row">
-      <aside className="flex shrink-0 border-b border-border bg-card md:min-h-screen md:w-64 md:flex-col md:border-b-0 md:border-r">
-        <div className="flex items-center gap-3 px-4 py-3 md:py-4">
-          <img src={logo} alt="CHURRASPÃO E CIA" className="h-10 w-10 rounded-full object-cover ring-2 ring-brand/40" />
-          <div>
-            <p className="font-display text-sm font-bold leading-tight">{BRAND.name}</p>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-bright">Painel Admin</p>
+    <div className="min-h-screen bg-background text-foreground md:flex">
+      <aside className="sticky top-0 z-30 border-b border-border bg-card md:min-h-screen md:w-64 md:shrink-0 md:border-b-0 md:border-r">
+        <div className="flex items-center gap-2 px-3 py-3 md:gap-3 md:px-4 md:py-4">
+          <img src={logo} alt="CHURRASPAO E CIA" className="h-11 w-11 shrink-0 rounded-full object-contain ring-2 ring-brand/40 md:h-10 md:w-10" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-display text-sm font-bold leading-tight">{BRAND.name}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-bright">Painel admin</p>
           </div>
+          <Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground md:hidden" aria-label="Ver app do cliente">
+            <ShoppingBag className="h-4 w-4" />
+          </Link>
         </div>
-        <nav className="flex gap-0.5 overflow-x-auto px-2 pb-2 md:flex-col md:overflow-visible md:py-1">
-          {ADMIN_MENU.map((item) => {
-            const isActive = item.path === "/admin" ? location === "/admin" : location.startsWith(item.path);
-            const Icon = item.icon;
-            return (
-              <Link key={item.path} href={item.path} className={`flex items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors ${isActive ? "bg-brand text-white" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`}>
-                <Icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <AdminMenu />
         <div className="hidden md:mt-auto md:block md:p-3">
           <Link href="/" className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
             <ShoppingBag className="h-4 w-4" /> Ver app do cliente
@@ -62,13 +72,13 @@ export default function AdminLayout({ title, subtitle, children }: { title?: str
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-background/90 px-4 py-3 backdrop-blur md:px-6">
-          <div>
-            <h1 className="font-display text-lg font-bold">{title ?? "Painel Administrativo"}</h1>
-            {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+        <header className="sticky top-[98px] z-20 flex items-center justify-between border-b border-border bg-background/95 px-4 py-3 backdrop-blur md:top-0 md:px-6">
+          <div className="min-w-0">
+            <h1 className="truncate font-display text-xl font-bold md:text-lg">{title ?? "Painel Administrativo"}</h1>
+            {subtitle && <p className="truncate text-xs text-muted-foreground">{subtitle}</p>}
           </div>
-          <div className="flex items-center gap-2">
-            <label className="btn-press inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground">
+          <div className="flex shrink-0 items-center gap-2">
+            <label className="btn-press inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground">
               <ImageUp className="h-4 w-4" />
               Logo
               <input
@@ -87,7 +97,7 @@ export default function AdminLayout({ title, subtitle, children }: { title?: str
             </label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-2">
+                <Button variant="ghost" className="h-10 w-10 rounded-full p-0 md:w-auto md:px-3">
                   <Avatar className="h-8 w-8 border border-brand/40">
                     <AvatarFallback className="text-xs font-medium">R</AvatarFallback>
                   </Avatar>
@@ -108,7 +118,7 @@ export default function AdminLayout({ title, subtitle, children }: { title?: str
             </DropdownMenu>
           </div>
         </header>
-        <main className="flex-1 p-4 pb-24 md:p-6 md:pb-8">{children}</main>
+        <main className="flex-1 p-3 pb-24 md:p-6 md:pb-8">{children}</main>
       </div>
     </div>
   );
@@ -118,7 +128,7 @@ export function AdminForbidden() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-8">
       <p className="font-display text-xl font-bold">Acesso restrito</p>
-      <p className="text-center text-sm text-muted-foreground">Esta área é exclusiva dos administradores do CHURRASPÃO E CIA.</p>
+      <p className="text-center text-sm text-muted-foreground">Esta area e exclusiva dos administradores do CHURRASPAO E CIA.</p>
       <Link href="/" className="font-semibold text-brand-bright hover:underline">Voltar ao app</Link>
     </div>
   );
