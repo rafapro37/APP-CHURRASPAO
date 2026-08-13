@@ -1,0 +1,39 @@
+PASSO A PASSO - CHURRASPAO ONLINE COM SUPABASE
+
+1. Extraia este pacote por cima da pasta:
+   D:\CHURRASPAO
+
+2. Abra o terminal dentro de:
+   D:\CHURRASPAO
+
+3. Rode:
+   pnpm install
+
+4. No Supabase, abra SQL Editor e cole todo o conteudo do arquivo:
+   supabase-orders-realtime-test.sql
+
+5. Confira se o arquivo .env.local tem:
+   NEXT_PUBLIC_SUPABASE_URL=sua_url_do_supabase
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anon
+   NEXT_PUBLIC_ADMIN_PASSWORD=sua_senha_admin
+   NEXT_PUBLIC_GARCOM_PASSWORD=sua_senha_garcom
+   NEXT_PUBLIC_COZINHA_PASSWORD=sua_senha_cozinha
+
+   Se nao colocar as senhas acima, o sistema usa temporariamente:
+   Admin: admin123
+   Garcom: garcom123
+   Cozinha: cozinha123
+
+6. Reinicie o app:
+   Ctrl + C
+   pnpm run dev
+
+7. Teste em aparelhos diferentes:
+   Cliente: http://SEU-IP:3000/
+   Admin: http://SEU-IP:3000/admin
+   Garcom: http://SEU-IP:3000/garcom
+   Cozinha: http://SEU-IP:3000/cozinha
+
+IMPORTANTE
+Este SQL esta em modo de teste para liberar leitura e atualizacao dos pedidos sem login real.
+Depois que o app estiver aprovado, o ideal e travar as permissoes de admin, garcom e cozinha com login.
