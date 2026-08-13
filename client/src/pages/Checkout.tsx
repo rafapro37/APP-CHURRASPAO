@@ -1,6 +1,6 @@
 ﻿import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, MapPin, Truck, Store, CreditCard, Banknote, QrCode, ClipboardCopy, Zap } from "lucide-react";
+import { ArrowLeft, MapPin, Truck, Store, CreditCard, Banknote, QrCode, ClipboardCopy, Zap, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { AppHeader } from "@/components/AppLayout";
@@ -13,8 +13,8 @@ import { createOrder } from "@/lib/localOrders";
 type PaymentMethod = "pix" | "card" | "cash" | "online";
 
 const PAYMENT_OPTIONS: { value: PaymentMethod; label: string; icon: typeof QrCode; detail: string }[] = [
-  { value: "pix", label: "PIX", icon: QrCode, detail: "AprovaÃ§Ã£o imediata" },
-  { value: "card", label: "CartÃ£o", icon: CreditCard, detail: "DÃ©bito ou crÃ©dito na entrega" },
+  { value: "pix", label: "PIX", icon: QrCode, detail: "Aprovacao imediata" },
+  { value: "card", label: "Cartao", icon: CreditCard, detail: "Debito ou credito na entrega" },
   { value: "cash", label: "Dinheiro", icon: Banknote, detail: "Pagamento na entrega" },
 ];
 
@@ -38,10 +38,10 @@ export default function Checkout() {
       <div className="min-h-screen bg-background flex flex-col">
         <AppHeader title="CHECKOUT" />
         <div className="flex-1 flex flex-col items-center justify-center gap-4 px-8">
-          <p className="text-6xl">ðŸ›’</p>
+          <ShoppingBag className="h-14 w-14 text-brand-bright" />
           <p className="font-display text-lg font-semibold">Adicione itens antes de fechar o pedido</p>
           <Link href="/cardapio" className="btn-press rounded-2xl bg-brand px-6 py-3 font-display font-bold text-white uppercase hover:bg-brand-bright transition-colors">
-            Ir ao cardÃ¡pio
+            Ir ao cardapio
           </Link>
         </div>
       </div>
@@ -53,8 +53,8 @@ export default function Checkout() {
 
   const validate = (): string | null => {
     if (!customerName.trim()) return "Informe seu nome";
-    if (phone.replace(/\D/g, "").length < 10) return "Informe um telefone vÃ¡lido";
-    if (deliveryType === "delivery" && address.trim().length < 10) return "Informe o endereÃ§o completo de entrega";
+    if (phone.replace(/\D/g, "").length < 10) return "Informe um telefone valido";
+    if (deliveryType === "delivery" && address.trim().length < 10) return "Informe o endereco completo de entrega";
     return null;
   };
 
@@ -121,8 +121,8 @@ export default function Checkout() {
         {/* Tipo de pedido */}
         <section className="rounded-2xl bg-card border border-border p-2 grid grid-cols-2 gap-2">
           {([
-            { value: "delivery", icon: Truck, label: "Entrega", detail: "ðŸ• 30-50 min" },
-            { value: "pickup", icon: Store, label: "Retirar no local", detail: "ðŸ• ~20 min" },
+            { value: "delivery", icon: Truck, label: "Entrega", detail: "30-50 min" },
+            { value: "pickup", icon: Store, label: "Retirar no local", detail: "A partir de 20 min" },
           ] as const).map((opt) => (
             <button key={opt.value} onClick={() => setDeliveryType(opt.value)} className={cn("btn-press rounded-xl border p-3 text-left transition-all", deliveryType === opt.value ? "border-brand-bright bg-brand/10 ring-1 ring-brand-bright" : "border-border bg-background hover:border-brand/50")}>
               <div className="flex items-center gap-2">
@@ -148,24 +148,24 @@ export default function Checkout() {
           {deliveryType === "delivery" && (
             <>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" /> EndereÃ§o de entrega *</label>
-                <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Rua, nÃºmero, bairro, complemento" className="mt-1 w-full rounded-xl bg-background border border-border px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand/60" />
+                <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" /> Endereco de entrega *</label>
+                <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Rua, numero, bairro, complemento" className="mt-1 w-full rounded-xl bg-background border border-border px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand/60" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground">Ponto de referÃªncia</label>
-                <input value={addressRef} onChange={(e) => setAddressRef(e.target.value)} placeholder="Ex: casa azul, portÃ£o preto" className="mt-1 w-full rounded-xl bg-background border border-border px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand/60" />
+                <label className="text-xs font-semibold text-muted-foreground">Ponto de referencia</label>
+                <input value={addressRef} onChange={(e) => setAddressRef(e.target.value)} placeholder="Ex: casa azul, portao preto" className="mt-1 w-full rounded-xl bg-background border border-border px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand/60" />
               </div>
             </>
           )}
           <div>
-            <label className="text-xs font-semibold text-muted-foreground">ObservaÃ§Ã£o geral</label>
+            <label className="text-xs font-semibold text-muted-foreground">Observacao geral</label>
             <textarea value={observation} onChange={(e) => setObservation(e.target.value)} maxLength={2000} placeholder="Ex: sem cebola no lanche, entregar no fundo..." className="mt-1 w-full rounded-xl bg-background border border-border px-3.5 py-2.5 text-sm resize-none h-20 focus:outline-none focus:ring-2 focus:ring-brand/60" />
           </div>
         </section>
 
         {/* Pagamento */}
         <section className="rounded-2xl bg-card border border-border p-4 flex flex-col gap-3">
-          <p className="font-display font-semibold text-sm">ðŸ’³ Forma de pagamento</p>
+          <p className="font-display font-semibold text-sm">Forma de pagamento</p>
           <div className="flex flex-col gap-2">
             {PAYMENT_OPTIONS.map((opt) => (
               <button key={opt.value} onClick={() => setPayment(opt.value)} className={cn("btn-press flex items-center gap-3 rounded-xl border p-3.5 text-left transition-all", payment === opt.value ? "border-brand-bright bg-brand/10 ring-1 ring-brand-bright" : "border-border bg-background hover:border-brand/50")}>
@@ -187,7 +187,7 @@ export default function Checkout() {
           {payment === "pix" && (
             <div className="rounded-xl bg-background border border-border p-3 flex items-center gap-2">
               <QrCode className="h-4 w-4 text-brand-bright" />
-              <p className="text-xs text-muted-foreground">O PIX serÃ¡ pago na confirmaÃ§Ã£o do pedido. VocÃª receberÃ¡ os dados junto ao acompanhamento.</p>
+              <p className="text-xs text-muted-foreground">O PIX sera pago na confirmacao do pedido. Voce recebera os dados junto ao acompanhamento.</p>
             </div>
           )}
         </section>
@@ -210,10 +210,10 @@ export default function Checkout() {
             <span className="text-muted-foreground flex items-center gap-1">
               <Truck className="h-3.5 w-3.5" /> {deliveryType === "delivery" ? "Entrega" : "Retirada no local"}
             </span>
-            <span>{deliveryFee === 0 && deliveryType === "delivery" ? <span className="text-green-400 font-semibold">GRÃTIS ðŸŽ‰</span> : formatBRL(deliveryFee)}</span>
+            <span>{deliveryFee === 0 && deliveryType === "delivery" ? <span className="font-semibold text-brand-bright">Gratis</span> : formatBRL(deliveryFee)}</span>
           </div>
           {subtotal < FREE_DELIVERY_THRESHOLD && deliveryType === "delivery" && (
-            <p className="text-[11px] text-brand-bright">Faltam {formatBRL(FREE_DELIVERY_THRESHOLD - subtotal)} para a entrega grÃ¡tis!</p>
+            <p className="text-[11px] text-brand-bright">Faltam {formatBRL(FREE_DELIVERY_THRESHOLD - subtotal)} para entrega gratis.</p>
           )}
           <div className="flex justify-between items-baseline border-t border-border pt-2 mt-1">
             <span className="font-display font-semibold uppercase text-sm">Total</span>
@@ -223,7 +223,7 @@ export default function Checkout() {
 
         <button onClick={handlePlace} disabled={placing} className="btn-press rounded-2xl bg-brand py-4 font-display font-bold text-white uppercase tracking-wide hover:bg-brand-bright transition-colors disabled:opacity-50 shadow-lg shadow-brand/30 flex items-center justify-center gap-2">
           {placing ? <span className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <ClipboardCopy className="h-5 w-5" />}
-          {placing ? "Enviando pedido..." : `Confirmar pedido â€¢ ${formatBRL(total)}`}
+          {placing ? "Enviando pedido..." : `Confirmar pedido - ${formatBRL(total)}`}
         </button>
       </div>
     </div>

@@ -2,7 +2,7 @@
 import { Camera, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import AdminLayout from "./AdminLayout";
 import { formatBRL } from "@/lib/brand";
-import { clearSavedProductImages, getAdminProducts, getAllCategories, removeLocalProduct, saveLocalProduct, type LocalProduct } from "@/lib/localCatalog";
+import { clearSavedProductImages, getAdminProducts, getAllCategories, publishLocalCatalogToCloud, removeLocalProduct, saveLocalProduct, type LocalProduct } from "@/lib/localCatalog";
 
 type ProductForm = {
   id?: number;
@@ -63,6 +63,8 @@ export default function AdminProdutos() {
   const [products, setProducts] = useState(getAdminProducts);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [form, setForm] = useState<ProductForm>(emptyForm);
   const isEditing = form.id != null;
 
@@ -101,7 +103,7 @@ export default function AdminProdutos() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const submit = (event: React.FormEvent) => {
+  const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
 
@@ -109,10 +111,11 @@ export default function AdminProdutos() {
     const price = Number(form.price.replace(",", "."));
     if (!form.name.trim()) return setError("Informe o nome do produto.");
     if (!categoryId) return setError("Cadastre uma categoria antes de adicionar produtos.");
-    if (Number.isNaN(price) || price < 0) return setError("Informe um preÃ§o válido.");
+    if (Number.isNaN(price) || price < 0) return setError("Informe um preco valido.");
 
+    setSaving(true);
     try {
-      saveLocalProduct({
+      await saveLocalProduct({
         id: form.id,
         name: form.name,
         price,
@@ -126,8 +129,10 @@ export default function AdminProdutos() {
       });
       refresh();
       resetForm();
-    } catch {
-      setError("Não foi possível salvar. Clique em Limpar fotos pesadas, escolha a foto novamente e salve.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Nao foi possivel salvar o produto.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -184,9 +189,9 @@ export default function AdminProdutos() {
             </button>
           )}
           <div className="grid grid-cols-2 gap-2">
-            <button className="btn-press inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-bold text-white hover:bg-brand-bright">
+            <button disabled={saving} className="btn-press inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-bold text-white hover:bg-brand-bright disabled:opacity-60">
               {isEditing ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-              {isEditing ? "Salvar" : "Adicionar"}
+              {saving ? "Salvando" : isEditing ? "Salvar" : "Adicionar"}
             </button>
             <button type="button" onClick={resetForm} className="btn-press inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-bold text-muted-foreground hover:text-foreground">
               <X className="h-4 w-4" />
@@ -201,6 +206,26 @@ export default function AdminProdutos() {
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-display text-xl font-bold">Produtos cadastrados</h2>
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            disabled={publishing}
+            onClick={async () => {
+              setError("");
+              setPublishing(true);
+              try {
+                await publishLocalCatalogToCloud();
+                refresh();
+                setError("Catalogo publicado na nuvem. Abra o app no celular novamente para ver as fotos.");
+              } catch (e) {
+                setError(e instanceof Error ? e.message : "Nao foi possivel publicar o catalogo.");
+              } finally {
+                setPublishing(false);
+              }
+            }}
+            className="rounded-full border border-brand/60 px-3 py-1 text-xs font-semibold text-brand-bright transition-colors hover:bg-brand hover:text-white disabled:opacity-60"
+          >
+            {publishing ? "Publicando" : "Publicar catalogo"}
+          </button>
           <button
             type="button"
             onClick={() => {

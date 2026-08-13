@@ -5,6 +5,8 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { CartProvider } from "./contexts/CartContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { subscribeToCatalog, syncCatalogFromCloud } from "@/lib/localCatalog";
+import { useEffect } from "react";
 
 // Rotas do app do cliente
 import Entrada from "./pages/Entrada";
@@ -63,12 +65,26 @@ function Router() {
   );
 }
 
+function CatalogCloudSync() {
+  useEffect(() => {
+    const refresh = () => {
+      window.dispatchEvent(new Event("churraspao-catalog-updated"));
+    };
+
+    void syncCatalogFromCloud().finally(refresh);
+    return subscribeToCatalog(refresh);
+  }, []);
+
+  return null;
+}
+
 function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
           <CartProvider>
+            <CatalogCloudSync />
             <Toaster />
             <Router />
           </CartProvider>
