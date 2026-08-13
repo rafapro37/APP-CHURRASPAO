@@ -203,7 +203,9 @@ export function createLocalOrder(input: OrderInput) {
 }
 
 export async function createOrder(input: OrderInput) {
-  if (!supabase) return createLocalOrder(input);
+  if (!supabase) {
+    throw new Error("Supabase nao configurada. Confira as variaveis NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY na Vercel.");
+  }
 
   const code = makeCode();
   const payload = {
@@ -226,8 +228,8 @@ export async function createOrder(input: OrderInput) {
   const { data, error } = await supabase.from("orders").insert(payload).select("*").single();
 
   if (error) {
-    console.error("[Churraspao] Pedido salvo localmente porque a Supabase recusou:", error);
-    return createLocalOrder(input);
+    console.error("[Churraspao] A Supabase recusou o pedido:", error);
+    throw new Error(error.message || "Nao foi possivel salvar o pedido online.");
   }
 
   dispatchOrderUpdate();
@@ -239,12 +241,12 @@ export function getLocalOrders() {
 }
 
 export async function getOrders() {
-  if (!supabase) return getLocalOrders();
+  if (!supabase) return [];
 
   const { data, error } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
   if (error) {
     console.error("[Churraspao] Nao foi possivel carregar pedidos da Supabase:", error);
-    return getLocalOrders();
+    return [];
   }
 
   return (data ?? []).map(mapSupabaseOrder);
