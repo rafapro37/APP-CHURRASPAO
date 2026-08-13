@@ -307,3 +307,27 @@ export function subscribeToOrders(onChange: () => void) {
     }
   };
 }
+
+export function subscribeToReadyOrderAlerts(onReady: (order: LocalOrder) => void) {
+  let knownReadyCodes = new Set<string>();
+  let started = false;
+
+  const check = async () => {
+    const orders = await getOrders();
+    const readyOrders = orders.filter((order) => order.status === "ready");
+    const nextReadyCodes = new Set(readyOrders.map((order) => order.code));
+
+    if (started) {
+      for (const order of readyOrders) {
+        if (!knownReadyCodes.has(order.code)) onReady(order);
+      }
+    }
+
+    knownReadyCodes = nextReadyCodes;
+    started = true;
+  };
+
+  void check();
+  const unsubscribe = subscribeToOrders(check);
+  return unsubscribe;
+}

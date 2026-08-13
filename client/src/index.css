@@ -146,6 +146,19 @@
     0%, 100% { opacity: 0.55; }
     50% { opacity: 1; }
   }
+  @media (prefers-reduced-motion: no-preference) {
+    .ready-toast {
+      animation: readyToastIn 0.24s ease-out both, readyToastPulse 1.05s ease-in-out 0.24s 5;
+    }
+  }
+  @keyframes readyToastIn {
+    from { opacity: 0; transform: translateY(-18px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes readyToastPulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(244, 122, 11, 0.0), 0 18px 40px rgba(0, 0, 0, 0.55); }
+    50% { box-shadow: 0 0 28px rgba(244, 122, 11, 0.55), 0 18px 45px rgba(217, 101, 8, 0.28); }
+  }
   .btn-press {
     transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1);
   }

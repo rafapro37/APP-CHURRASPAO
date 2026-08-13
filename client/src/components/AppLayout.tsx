@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Flame, Home, Menu, Tag, Ticket, User, UtensilsCrossed, X } from "lucide-react";
-import { startLogin } from "@/const";
+import { BellRing, Flame, Home, Menu, Tag, Ticket, User, UtensilsCrossed, X } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { BRAND } from "@/lib/brand";
 import { getBrandLogo } from "@/lib/localCatalog";
+import { subscribeToReadyOrderAlerts, type LocalOrder } from "@/lib/localOrders";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -103,9 +103,11 @@ export function AppHeader({ title, subtitle }: { title?: string; subtitle?: stri
             <p className="truncate font-display text-sm font-bold leading-tight">{title ?? BRAND.name}</p>
             <p className="truncate text-[11px] text-muted-foreground">{subtitle ?? "Entrega em toda a cidade"}</p>
           </div>
-          <Link href="/perfil" className={cn("shrink-0 text-xs font-semibold", isAuthenticated ? "text-brand-bright" : "text-muted-foreground")} onClick={(event) => !isAuthenticated && event.preventDefault()}>
-            {isAuthenticated ? `Ola, ${user?.name?.split(" ")[0] ?? "Rafael"}` : "Entrar"}
-          </Link>
+          {isAuthenticated && (
+            <Link href="/perfil" className="shrink-0 text-xs font-semibold text-brand-bright">
+              Ola, {user?.name?.split(" ")[0] ?? "Rafael"}
+            </Link>
+          )}
         </div>
       </header>
       <ClientDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -145,32 +147,49 @@ export function SplashScreen() {
 
 export function AppLayout({ children, showHeader = true }: { children: React.ReactNode; showHeader?: boolean }) {
   const splash = useSplash();
+  const [readyOrder, setReadyOrder] = useState<LocalOrder | null>(null);
+
+  useEffect(() => {
+    return subscribeToReadyOrderAlerts((order) => {
+      setReadyOrder(order);
+      window.setTimeout(() => setReadyOrder((current) => (current?.code === order.code ? null : current)), 9000);
+
+      if ("vibrate" in navigator) {
+        navigator.vibrate([700, 220, 700, 220, 900]);
+      }
+
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("Seu pedido esta pronto", {
+          body: `Pedido ${order.code} pronto para retirada ou entrega.`,
+        });
+      } else if ("Notification" in window && Notification.permission === "default") {
+        void Notification.requestPermission().then((permission) => {
+          if (permission === "granted") {
+            new Notification("Seu pedido esta pronto", {
+              body: `Pedido ${order.code} pronto para retirada ou entrega.`,
+            });
+          }
+        });
+      }
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-background pb-24 text-foreground md:pb-8">
       {splash && <SplashScreen />}
       {showHeader && <AppHeader />}
+      {readyOrder && (
+        <Link href={`/pedido/${readyOrder.code}`} className="ready-toast fixed left-3 right-3 top-3 z-[70] mx-auto flex max-w-[430px] items-center gap-3 rounded-2xl border border-brand bg-[#171717] p-3 shadow-2xl shadow-brand/30">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand text-white">
+            <BellRing className="h-5 w-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-sm font-bold">Pedido pronto</span>
+            <span className="block truncate text-xs text-muted-foreground">{readyOrder.customerName} - toque para acompanhar</span>
+          </span>
+        </Link>
+      )}
       <main>{children}</main>
     </div>
   );
-}
-
-export function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, loading } = useAuth();
-
-  useEffect(() => {
-    if (!loading && !isAuthenticated) startLogin();
-  }, [loading, isAuthenticated]);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand border-t-transparent" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) return null;
-
-  return <>{children}</>;
 }

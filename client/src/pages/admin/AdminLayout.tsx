@@ -1,13 +1,11 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Flame, UtensilsCrossed, ListOrdered, Ticket, Wallet, Users, LogOut, ShoppingBag, ImageUp } from "lucide-react";
+import { LayoutDashboard, Flame, UtensilsCrossed, ListOrdered, Ticket, Wallet, Users, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { BRAND } from "@/lib/brand";
-import { getBrandLogo, saveBrandLogo } from "@/lib/localCatalog";
+import { getBrandLogo } from "@/lib/localCatalog";
 import { clearAccess } from "@/lib/accessControl";
-import { toast } from "sonner";
-import { useState } from "react";
 
 const ADMIN_MENU = [
   { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -18,15 +16,6 @@ const ADMIN_MENU = [
   { path: "/admin/cupons", label: "Cupons", icon: Wallet },
   { path: "/admin/clientes", label: "Clientes", icon: Users },
 ];
-
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
 
 function AdminMenu() {
   const [location] = useLocation();
@@ -48,7 +37,7 @@ function AdminMenu() {
 }
 
 export default function AdminLayout({ title, subtitle, children }: { title?: string; subtitle?: string; children: React.ReactNode }) {
-  const [logo, setLogo] = useState(getBrandLogo);
+  const logo = getBrandLogo();
 
   return (
     <div className="min-h-screen bg-background text-foreground md:flex">
@@ -59,16 +48,8 @@ export default function AdminLayout({ title, subtitle, children }: { title?: str
             <p className="truncate font-display text-sm font-bold leading-tight">{BRAND.name}</p>
             <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-bright">Painel admin</p>
           </div>
-          <Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground md:hidden" aria-label="Ver app do cliente">
-            <ShoppingBag className="h-4 w-4" />
-          </Link>
         </div>
         <AdminMenu />
-        <div className="hidden md:mt-auto md:block md:p-3">
-          <Link href="/" className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
-            <ShoppingBag className="h-4 w-4" /> Ver app do cliente
-          </Link>
-        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -78,23 +59,6 @@ export default function AdminLayout({ title, subtitle, children }: { title?: str
             {subtitle && <p className="truncate text-xs text-muted-foreground">{subtitle}</p>}
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <label className="btn-press inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground">
-              <ImageUp className="h-4 w-4" />
-              Logo
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={async (event) => {
-                  const file = event.target.files?.[0];
-                  if (!file) return;
-                  const dataUrl = await fileToDataUrl(file);
-                  saveBrandLogo(dataUrl);
-                  setLogo(dataUrl);
-                  toast.success("Logo atualizada");
-                }}
-              />
-            </label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-10 w-10 rounded-full p-0 md:w-auto md:px-3">

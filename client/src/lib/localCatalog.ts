@@ -158,6 +158,20 @@ export function registerProductSales(items: { productId: number; quantity: numbe
   writeJson(SALES_KEY, sales);
 }
 
+export function registerProductSalesFromOrders(orders: { itemsJson: { productId: number; quantity: number }[] }[]) {
+  const sales: Record<number, number> = {};
+
+  for (const order of orders) {
+    for (const item of order.itemsJson ?? []) {
+      const productId = Number(item.productId);
+      if (!productId) continue;
+      sales[productId] = (sales[productId] ?? 0) + Math.max(1, Number(item.quantity ?? 1));
+    }
+  }
+
+  writeJson(SALES_KEY, sales);
+}
+
 export function getLocalCategories(): LocalCategory[] {
   return readJson<LocalCategory[]>(CATEGORIES_KEY, []);
 }
