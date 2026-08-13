@@ -17,6 +17,26 @@ const NAV = [
   { path: "/perfil", label: "Minha conta", icon: User },
 ];
 
+function vibrateReadyAlert() {
+  if (!("vibrate" in navigator)) return;
+
+  try {
+    navigator.vibrate([700, 220, 700, 220, 900]);
+  } catch {
+    // Alguns celulares bloqueiam vibracao pelo navegador. O aviso visual continua funcionando.
+  }
+}
+
+async function requestNotificationPermissionSafely() {
+  if (!("Notification" in window) || Notification.permission !== "default") return;
+
+  try {
+    await Notification.requestPermission();
+  } catch {
+    // Android/Chrome pode bloquear notificacoes sem service worker. Evita derrubar o app.
+  }
+}
+
 export function BottomNav() {
   const [location] = useLocation();
 
@@ -154,23 +174,8 @@ export function AppLayout({ children, showHeader = true }: { children: React.Rea
       setReadyOrder(order);
       window.setTimeout(() => setReadyOrder((current) => (current?.code === order.code ? null : current)), 9000);
 
-      if ("vibrate" in navigator) {
-        navigator.vibrate([700, 220, 700, 220, 900]);
-      }
-
-      if ("Notification" in window && Notification.permission === "granted") {
-        new Notification("Seu pedido esta pronto", {
-          body: `Pedido ${order.code} pronto para retirada ou entrega.`,
-        });
-      } else if ("Notification" in window && Notification.permission === "default") {
-        void Notification.requestPermission().then((permission) => {
-          if (permission === "granted") {
-            new Notification("Seu pedido esta pronto", {
-              body: `Pedido ${order.code} pronto para retirada ou entrega.`,
-            });
-          }
-        });
-      }
+      vibrateReadyAlert();
+      void requestNotificationPermissionSafely();
     });
   }, []);
 

@@ -27,6 +27,26 @@ const STEP_MESSAGES: Record<string, string> = {
 
 const READY_ALERT_KEY = "churraspao-ready-alert:";
 
+function vibrateReadyAlert() {
+  if (!("vibrate" in navigator)) return;
+
+  try {
+    navigator.vibrate([700, 220, 700, 220, 900]);
+  } catch {
+    // Mantem a tela do pedido aberta mesmo se o celular bloquear vibracao.
+  }
+}
+
+async function requestNotificationPermissionSafely() {
+  if (!("Notification" in window) || Notification.permission !== "default") return;
+
+  try {
+    await Notification.requestPermission();
+  } catch {
+    // Evita erro no Android quando o navegador exige service worker para notificacao.
+  }
+}
+
 export default function Pedido() {
   const { code } = useParams<{ code: string }>();
   const [localOrder, setLocalOrder] = useState<LocalOrder | null>(null);
@@ -60,21 +80,8 @@ export default function Pedido() {
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, "1");
 
-    if ("Notification" in window) {
-      if (Notification.permission === "granted") {
-        new Notification("Seu pedido esta pronto", {
-          body: `Pedido ${order.code} pronto para retirada ou entrega.`,
-        });
-      } else if (Notification.permission === "default") {
-        void Notification.requestPermission().then((permission) => {
-          if (permission === "granted") {
-            new Notification("Seu pedido esta pronto", {
-              body: `Pedido ${order.code} pronto para retirada ou entrega.`,
-            });
-          }
-        });
-      }
-    }
+    vibrateReadyAlert();
+    void requestNotificationPermissionSafely();
   }, [order]);
 
   const trackingSteps = order?.deliveryType === "pickup" ? PICKUP_TRACKING_STEPS : TRACKING_STEPS;
