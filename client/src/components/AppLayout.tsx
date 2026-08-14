@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { BellRing, Flame, Home, Menu, Tag, Ticket, User, UtensilsCrossed, X } from "lucide-react";
+import { BellRing, ChevronLeft, Flame, Home, Menu, Tag, Ticket, User, UtensilsCrossed } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { BRAND } from "@/lib/brand";
 import { getBrandLogo } from "@/lib/localCatalog";
@@ -67,13 +67,6 @@ export function ClientDrawer({ open, onClose }: { open: boolean; onClose: () => 
     <>
       {open && <button aria-label="Fechar menu" className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" onClick={onClose} />}
       <aside className={cn("fixed bottom-0 left-0 top-0 z-50 w-[82vw] max-w-[320px] overflow-visible border-r border-border bg-[#111] text-white shadow-2xl shadow-black/70 transition-transform duration-200", open ? "translate-x-0" : "-translate-x-full")}>
-        <button
-          onClick={onClose}
-          className="absolute -right-5 top-20 flex h-11 w-11 items-center justify-center rounded-full border border-brand/70 bg-brand text-white shadow-2xl shadow-brand/30 md:hidden"
-          aria-label="Fechar menu lateral"
-        >
-          <X className="h-6 w-6" />
-        </button>
         <div className="h-full overflow-y-auto p-4">
         <div className="flex items-center gap-3">
           <img src={logo} alt="CHURRASPAO E CIA" className="h-14 w-14 rounded-full object-contain ring-2 ring-brand/60" />
@@ -81,8 +74,8 @@ export function ClientDrawer({ open, onClose }: { open: boolean; onClose: () => 
             <p className="font-display text-base font-bold leading-tight">{BRAND.name}</p>
             <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-bright">App oficial</p>
           </div>
-          <button onClick={onClose} className="rounded-full p-2 hover:bg-secondary" aria-label="Fechar">
-            <X className="h-5 w-5" />
+          <button onClick={onClose} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-secondary hover:border-brand" aria-label="Fechar menu">
+            <ChevronLeft className="h-6 w-6" />
           </button>
         </div>
 

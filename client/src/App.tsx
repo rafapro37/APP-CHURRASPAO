@@ -20,20 +20,11 @@ import Pedido from "./pages/Pedido";
 import Pedidos from "./pages/Pedidos";
 import Ofertas from "./pages/Ofertas";
 import Perfil from "./pages/Perfil";
-import Garcom from "./pages/Garcom";
 import Cozinha from "./pages/Cozinha";
 import ProtectedAccess from "./components/ProtectedAccess";
 
 // Painel administrativo
 import AdminRouter from "./pages/admin/AdminRouter";
-
-function GarcomProtegido() {
-  return (
-    <ProtectedAccess role="garcom">
-      <Garcom />
-    </ProtectedAccess>
-  );
-}
 
 function CozinhaProtegida() {
   return (
@@ -56,7 +47,6 @@ function Router() {
       <Route path={"/pedidos"} component={Pedidos} />
       <Route path={"/ofertas"} component={Ofertas} />
       <Route path={"/perfil"} component={Perfil} />
-      <Route path={"/garcom"} component={GarcomProtegido} />
       <Route path={"/cozinha"} component={CozinhaProtegida} />
       <Route path={"/admin"} component={AdminRouter} />
       <Route path={"/admin/:path*"} component={AdminRouter} />

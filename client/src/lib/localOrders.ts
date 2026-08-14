@@ -2,6 +2,7 @@ import type { CartItem } from "@/contexts/CartContext";
 import { supabase } from "@/lib/supabaseClient";
 
 const ORDERS_KEY = "churraspao-local-orders";
+const MY_ORDER_CODES_KEY = "churraspao-my-order-codes";
 
 export type LocalOrderStatus = "new" | "accepted" | "preparing" | "ready" | "delivering" | "finished" | "cancelled";
 
@@ -129,6 +130,22 @@ function writeOrders(orders: LocalOrder[]) {
   window.dispatchEvent(new Event("churraspao-orders-updated"));
 }
 
+function readMyOrderCodes() {
+  if (typeof window === "undefined") return [];
+  try {
+    const codes = JSON.parse(localStorage.getItem(MY_ORDER_CODES_KEY) ?? "[]") as string[];
+    return Array.from(new Set(codes.filter(Boolean)));
+  } catch {
+    return [];
+  }
+}
+
+function rememberMyOrderCode(code: string) {
+  if (typeof window === "undefined" || !code) return;
+  const codes = readMyOrderCodes().filter((item) => item !== code);
+  localStorage.setItem(MY_ORDER_CODES_KEY, JSON.stringify([code, ...codes].slice(0, 50)));
+}
+
 function makeCode() {
   const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
   return `CHU-${Date.now().toString().slice(-5)}-${suffix}`;
@@ -199,6 +216,7 @@ export function createLocalOrder(input: OrderInput) {
     createdAt: new Date().toISOString(),
   };
   writeOrders([order, ...readOrders()]);
+  rememberMyOrderCode(order.code);
   return order;
 }
 
@@ -232,8 +250,10 @@ export async function createOrder(input: OrderInput) {
     throw new Error([error.message, error.details, error.hint, error.code].filter(Boolean).join(" | ") || "Nao foi possivel salvar o pedido online.");
   }
 
+  const order = mapSupabaseOrder(data);
+  rememberMyOrderCode(order.code);
   dispatchOrderUpdate();
-  return mapSupabaseOrder(data);
+  return order;
 }
 
 export function getLocalOrders() {
@@ -247,6 +267,24 @@ export async function getOrders() {
   if (error) {
     console.error("[Churraspao] Nao foi possivel carregar pedidos da Supabase:", error);
     return [];
+  }
+
+  return (data ?? []).map(mapSupabaseOrder);
+}
+
+export async function getMyOrders() {
+  const codes = readMyOrderCodes();
+  if (codes.length === 0) return [];
+
+  if (!supabase) {
+    const localOrders = readOrders();
+    return localOrders.filter((order) => codes.includes(order.code));
+  }
+
+  const { data, error } = await supabase.from("orders").select("*").in("public_code", codes).order("created_at", { ascending: false });
+  if (error) {
+    console.error("[Churraspao] Nao foi possivel carregar meus pedidos:", error);
+    return readOrders().filter((order) => codes.includes(order.code));
   }
 
   return (data ?? []).map(mapSupabaseOrder);

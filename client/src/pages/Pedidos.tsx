@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { ArrowRight, Flame } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { formatBRL, STATUS_EMOJI, STATUS_LABELS } from "@/lib/brand";
-import { getOrders, subscribeToOrders, type LocalOrder } from "@/lib/localOrders";
+import { getMyOrders, subscribeToOrders, type LocalOrder } from "@/lib/localOrders";
 
 export default function Pedidos() {
   const [orders, setOrders] = useState<LocalOrder[]>([]);
@@ -11,7 +11,7 @@ export default function Pedidos() {
   useEffect(() => {
     let active = true;
     const refresh = async () => {
-      const nextOrders = await getOrders();
+      const nextOrders = await getMyOrders();
       if (active) setOrders(nextOrders);
     };
 
@@ -29,14 +29,14 @@ export default function Pedidos() {
         <h1 className="flex items-center gap-2 font-display text-2xl font-bold">
           <Flame className="h-6 w-6 text-brand-bright" /> Meus pedidos
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Acompanhe seus pedidos feitos no app.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Acompanhe os pedidos feitos neste celular.</p>
       </section>
 
       <section className="mx-auto flex w-full max-w-[430px] flex-col gap-3 px-4 pt-4">
         {orders.length === 0 && (
           <div className="py-16 text-center">
             <p className="font-display text-lg font-semibold">Nenhum pedido ainda</p>
-            <p className="mt-1 text-sm text-muted-foreground">Escolha seus produtos no cardápio para simular um pedido.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Escolha seus produtos no cardápio para fazer um pedido.</p>
             <Link href="/cardapio" className="btn-press mt-4 inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 font-display text-sm font-bold uppercase text-white transition-colors hover:bg-brand-bright">
               Fazer meu primeiro pedido <ArrowRight className="h-4 w-4" />
             </Link>
@@ -53,7 +53,9 @@ export default function Pedidos() {
                   {STATUS_LABELS[order.status] ?? order.status}
                 </span>
               </div>
-              <p className="mt-1 truncate text-sm">{order.customerName} | {new Date(order.createdAt).toLocaleDateString("pt-BR")}</p>
+              <p className="mt-1 truncate text-sm">
+                {order.customerName} | {new Date(order.createdAt).toLocaleDateString("pt-BR")}
+              </p>
             </div>
             <span className="font-display font-bold text-brand-bright">{formatBRL(Number(order.total))}</span>
           </Link>
