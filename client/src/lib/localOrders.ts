@@ -251,6 +251,7 @@ export async function createOrder(input: OrderInput) {
   }
 
   const order = mapSupabaseOrder(data);
+  writeOrders([order, ...readOrders().filter((item) => item.code !== order.code)]);
   rememberMyOrderCode(order.code);
   dispatchOrderUpdate();
   return order;
@@ -344,10 +345,17 @@ export function subscribeToOrders(onChange: () => void) {
     window.addEventListener("storage", onChange);
   }
 
-  const channel = supabase
-    ?.channel("churraspao-orders-realtime")
-    .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, onChange)
-    .subscribe();
+  let channel: { subscribe: () => unknown } | null = null;
+  try {
+    channel =
+      supabase
+        ?.channel(`churraspao-orders-realtime-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+        .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, onChange) ?? null;
+    channel?.subscribe();
+  } catch (error) {
+    console.warn("[Churraspao] Tempo real de pedidos indisponivel, usando atualizacao local:", error);
+    channel = null;
+  }
 
   return () => {
     if (typeof window !== "undefined") {

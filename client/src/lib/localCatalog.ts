@@ -284,12 +284,19 @@ export async function syncCatalogFromCloud() {
 }
 
 export function subscribeToCatalog(onChange: () => void) {
-  const channel = supabase
-    ?.channel("churraspao-catalog-realtime")
-    .on("postgres_changes", { event: "*", schema: "public", table: CATALOG_PRODUCTS_TABLE }, () => {
-      void syncCatalogFromCloud().finally(onChange);
-    })
-    .subscribe();
+  let channel: { subscribe: () => unknown } | null = null;
+  try {
+    channel =
+      supabase
+        ?.channel(`churraspao-catalog-realtime-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+        .on("postgres_changes", { event: "*", schema: "public", table: CATALOG_PRODUCTS_TABLE }, () => {
+          void syncCatalogFromCloud().finally(onChange);
+        }) ?? null;
+    channel?.subscribe();
+  } catch (error) {
+    console.warn("[Churraspao] Tempo real do catalogo indisponivel:", error);
+    channel = null;
+  }
 
   return () => {
     if (channel) void supabase?.removeChannel(channel);
