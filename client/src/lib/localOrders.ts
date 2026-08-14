@@ -276,18 +276,23 @@ export async function getMyOrders() {
   const codes = readMyOrderCodes();
   if (codes.length === 0) return [];
 
-  if (!supabase) {
-    const localOrders = readOrders();
-    return localOrders.filter((order) => codes.includes(order.code));
-  }
+  try {
+    if (!supabase) {
+      const localOrders = readOrders();
+      return localOrders.filter((order) => codes.includes(order.code));
+    }
 
-  const { data, error } = await supabase.from("orders").select("*").in("public_code", codes).order("created_at", { ascending: false });
-  if (error) {
-    console.error("[Churraspao] Nao foi possivel carregar meus pedidos:", error);
+    const { data, error } = await supabase.from("orders").select("*").in("public_code", codes).order("created_at", { ascending: false });
+    if (error) {
+      console.error("[Churraspao] Nao foi possivel carregar meus pedidos:", error);
+      return readOrders().filter((order) => codes.includes(order.code));
+    }
+
+    return (data ?? []).map(mapSupabaseOrder).filter((order) => order.code && codes.includes(order.code));
+  } catch (error) {
+    console.error("[Churraspao] Erro ao abrir meus pedidos:", error);
     return readOrders().filter((order) => codes.includes(order.code));
   }
-
-  return (data ?? []).map(mapSupabaseOrder);
 }
 
 export function getLocalOrderByCode(code: string) {
