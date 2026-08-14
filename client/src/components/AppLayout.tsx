@@ -66,7 +66,15 @@ export function ClientDrawer({ open, onClose }: { open: boolean; onClose: () => 
   return (
     <>
       {open && <button aria-label="Fechar menu" className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" onClick={onClose} />}
-      <aside className={cn("fixed bottom-0 left-0 top-0 z-50 w-[82vw] max-w-[320px] overflow-y-auto border-r border-border bg-[#111] p-4 text-white shadow-2xl shadow-black/70 transition-transform duration-200", open ? "translate-x-0" : "-translate-x-full")}>
+      <aside className={cn("fixed bottom-0 left-0 top-0 z-50 w-[82vw] max-w-[320px] overflow-visible border-r border-border bg-[#111] text-white shadow-2xl shadow-black/70 transition-transform duration-200", open ? "translate-x-0" : "-translate-x-full")}>
+        <button
+          onClick={onClose}
+          className="absolute -right-5 top-20 flex h-11 w-11 items-center justify-center rounded-full border border-brand/70 bg-brand text-white shadow-2xl shadow-brand/30 md:hidden"
+          aria-label="Fechar menu lateral"
+        >
+          <X className="h-6 w-6" />
+        </button>
+        <div className="h-full overflow-y-auto p-4">
         <div className="flex items-center gap-3">
           <img src={logo} alt="CHURRASPAO E CIA" className="h-14 w-14 rounded-full object-contain ring-2 ring-brand/60" />
           <div className="min-w-0 flex-1">
@@ -90,6 +98,7 @@ export function ClientDrawer({ open, onClose }: { open: boolean; onClose: () => 
             );
           })}
         </nav>
+        </div>
       </aside>
     </>
   );
@@ -97,6 +106,7 @@ export function ClientDrawer({ open, onClose }: { open: boolean; onClose: () => 
 
 export function AppHeader({ title, subtitle }: { title?: string; subtitle?: string }) {
   const { user, isAuthenticated } = useAuth();
+  const [location] = useLocation();
   const [logo, setLogo] = useState(getBrandLogo);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -110,6 +120,10 @@ export function AppHeader({ title, subtitle }: { title?: string; subtitle?: stri
       window.removeEventListener("storage", refresh);
     };
   }, []);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location]);
 
   return (
     <>
