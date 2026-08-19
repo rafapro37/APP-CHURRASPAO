@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { ArrowRight, Flame, MapPin, Search, ShoppingBag } from "lucide-react";
+import { ArrowRight, Flame, MapPin, Search, ShoppingBag, Sparkles } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { ProductCard } from "@/components/ProductCard";
 import { useCart } from "@/contexts/CartContext";
@@ -39,6 +39,7 @@ export default function Home() {
     .sort((a, b) => (b.salesCount ?? 0) - (a.salesCount ?? 0))
     .slice(0, 6);
   const featured = products.filter((product) => product.isFeatured).slice(0, 8);
+  const showcase = featured.length > 0 ? featured : products.slice(0, 8);
 
   const quickAdd = (product: (typeof products)[number]) => {
     if (isSoldOutStatus(product.status)) return;
@@ -81,8 +82,11 @@ export default function Home() {
       </section>
 
       <section className="mx-auto w-full max-w-[430px] px-4 pt-4 md:max-w-5xl">
-        <Link href="/cardapio" className="group block overflow-hidden rounded-3xl border border-brand/40 bg-black">
+        <Link href="/cardapio" className="group relative block overflow-hidden rounded-3xl border border-brand/40 bg-black shadow-[0_18px_60px_rgba(217,101,8,0.14)]">
           <img src={BRAND.heroBanner} alt="Banner Churraspão & Cia" className="h-auto w-full object-contain transition-transform duration-500 group-hover:scale-[1.01]" />
+          <span className="absolute bottom-3 left-3 rounded-full bg-brand px-4 py-2 font-display text-xs font-bold uppercase text-white shadow-lg shadow-brand/30">
+            Ver cardapio
+          </span>
         </Link>
       </section>
 
@@ -117,13 +121,16 @@ export default function Home() {
 
       <section className="mx-auto w-full max-w-[430px] px-4 pt-6 md:max-w-5xl">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-xl font-bold">Escolha seu pedido</h2>
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-brand-bright" />
+            <h2 className="font-display text-xl font-bold">Escolha seu pedido</h2>
+          </div>
           <Link href="/cardapio" className="flex items-center gap-1 text-sm font-semibold text-brand-bright">
             Cardápio <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {featured.map((product) => (
+          {showcase.map((product) => (
             <ProductCard key={product.id} product={product} onAdd={() => quickAdd(product)} />
           ))}
         </div>

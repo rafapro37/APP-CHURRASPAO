@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useSearch } from "wouter";
-import { ArrowLeft, Trash2, Plus, Minus, Tag } from "lucide-react";
+import { ArrowLeft, Trash2, Plus, Minus, Tag, ShoppingBag, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
@@ -48,11 +48,11 @@ export default function Carrinho() {
       <div className="min-h-screen bg-background flex flex-col">
         <AppHeader title="CARRINHO" subtitle="Suas delícias te esperam aqui" />
         <div className="flex-1 flex flex-col items-center justify-center gap-4 px-8">
-          <p className="text-6xl">🛒</p>
-          <p className="font-display text-lg font-semibold">Seu carrinho está vazio</p>
-          <p className="text-sm text-muted-foreground text-center">A fome aperta, mas o carrinho precisa encher! Vá ao cardápio escolher suas delícias.</p>
+          <ShoppingBag className="h-16 w-16 text-brand-bright" />
+          <p className="font-display text-lg font-semibold">Seu carrinho esta vazio</p>
+          <p className="text-sm text-muted-foreground text-center">Escolha seus produtos no cardapio para montar o pedido.</p>
           <Link href="/cardapio" className="btn-press mt-2 rounded-2xl bg-brand px-6 py-3 font-display font-bold text-white uppercase hover:bg-brand-bright transition-colors">
-            Ir ao cardápio
+            Ir ao cardapio
           </Link>
         </div>
       </div>
@@ -68,22 +68,26 @@ export default function Carrinho() {
           <Link href={backLink} className="p-2 -ml-2 rounded-full hover:bg-card transition-colors" aria-label="Voltar">
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <p className="font-display font-bold text-sm flex-1">Seu pedido 🔥</p>
-          <button onClick={() => { clear(); toast.success("Carrinho limpo 🧹"); }} className="text-xs font-semibold text-muted-foreground hover:text-red-400 transition-colors flex items-center gap-1">
+          <p className="font-display font-bold text-sm flex-1">Seu pedido</p>
+          <button onClick={() => { clear(); toast.success("Carrinho limpo"); }} className="text-xs font-semibold text-muted-foreground hover:text-red-400 transition-colors flex items-center gap-1">
             <Trash2 className="h-3.5 w-3.5" /> Limpar
           </button>
         </div>
       </div>
 
       <div className="max-w-3xl mx-auto px-4 pt-4 flex flex-col gap-4">
-        {/* Itens */}
+        <div className="rounded-2xl border border-brand/30 bg-gradient-to-br from-[#251100] to-card p-4">
+          <p className="font-display text-xl font-bold">Revise seu pedido</p>
+          <p className="mt-1 text-sm text-muted-foreground">Confira quantidades, observacoes e cupom antes de finalizar.</p>
+        </div>
+
         <div className="flex flex-col gap-3">
           {items.map((item) => {
             const unit = itemUnitPrice(item);
             return (
               <div key={item.cartId} className="fade-up rounded-2xl bg-card border border-border p-3 flex gap-3">
                 <div className="h-20 w-20 shrink-0 rounded-xl overflow-hidden bg-secondary">
-                  {item.imageUrl ? <img src={item.imageUrl} alt={item.productName} className="h-full w-full object-cover" /> : <div className="h-full w-full flex items-center justify-center">🔥</div>}
+                  {item.imageUrl ? <img src={item.imageUrl} alt={item.productName} className="h-full w-full object-contain object-center p-1" /> : <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">Sem foto</div>}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
@@ -124,7 +128,6 @@ export default function Carrinho() {
           })}
         </div>
 
-        {/* Cupom */}
         <div className="rounded-2xl bg-card border border-border p-4">
           <p className="font-display font-semibold text-sm flex items-center gap-2"><Tag className="h-4 w-4 text-brand-bright" /> Cupom de desconto</p>
           <div className="mt-3 flex gap-2">
@@ -132,7 +135,7 @@ export default function Carrinho() {
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
               onKeyDown={(e) => e.key === "Enter" && applyCoupon()}
-              placeholder="DIGITE O CÓDIGO (ex: CHURRAS10)"
+              placeholder="DIGITE O CODIGO"
               className={cn("flex-1 rounded-xl border bg-background px-3.5 py-2.5 text-sm font-semibold uppercase tracking-wide placeholder:normal-case placeholder:font-normal placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand/60", coupon ? "border-green-500/50" : "border-border")}
             />
             <button onClick={applyCoupon} disabled={applying} className="btn-press rounded-xl bg-secondary px-4 py-2.5 text-sm font-bold hover:bg-muted transition-colors disabled:opacity-50">
@@ -144,7 +147,6 @@ export default function Carrinho() {
           )}
         </div>
 
-        {/* Resumo */}
         <div className="rounded-2xl bg-card border border-border p-4 flex flex-col gap-2">
           <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span>{formatBRL(subtotal)}</span></div>
           {coupon && <div className="flex justify-between text-sm"><span className="text-green-400">Desconto do cupom</span><span className="text-green-400">-{formatBRL(coupon.discount)}</span></div>}
@@ -154,8 +156,8 @@ export default function Carrinho() {
           </div>
         </div>
 
-        <Link href="/checkout" className="btn-press rounded-2xl bg-brand py-4 text-center font-display font-bold text-white uppercase tracking-wide hover:bg-brand-bright transition-colors shadow-lg shadow-brand/30">
-          Finalizar pedido 🔥
+        <Link href="/checkout" className="btn-press flex items-center justify-center gap-2 rounded-2xl bg-brand py-4 text-center font-display font-bold text-white uppercase tracking-wide hover:bg-brand-bright transition-colors shadow-lg shadow-brand/30">
+          Finalizar pedido <ArrowRight className="h-5 w-5" />
         </Link>
       </div>
     </div>

@@ -14,7 +14,7 @@ import { subscribeCurrentDevice } from "@/lib/pushNotifications";
 type PaymentMethod = "pix" | "card" | "cash" | "online";
 
 const PAYMENT_OPTIONS: { value: PaymentMethod; label: string; icon: typeof QrCode; detail: string }[] = [
-  { value: "pix", label: "PIX", icon: QrCode, detail: "Aprovacao imediata" },
+  { value: "pix", label: "PIX", icon: QrCode, detail: "Pagamento rapido" },
   { value: "card", label: "Cartao", icon: CreditCard, detail: "Debito ou credito na entrega" },
   { value: "cash", label: "Dinheiro", icon: Banknote, detail: "Pagamento na entrega" },
 ];
@@ -120,7 +120,16 @@ export default function Checkout() {
       </div>
 
       <div className="mx-auto flex w-full max-w-[430px] flex-col gap-4 px-3 pt-4 sm:px-4">
-        {/* Tipo de pedido */}
+        <section className="rounded-2xl border border-brand/30 bg-gradient-to-br from-[#251100] to-card p-4">
+          <p className="font-display text-xl font-bold">So falta confirmar</p>
+          <p className="mt-1 text-sm text-muted-foreground">Preencha seus dados para o pedido chegar direto na cozinha.</p>
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center text-[10px] font-bold uppercase text-muted-foreground">
+            <span className="rounded-full bg-brand px-2 py-1 text-white">Dados</span>
+            <span className="rounded-full bg-secondary px-2 py-1">Pagamento</span>
+            <span className="rounded-full bg-secondary px-2 py-1">Confirmar</span>
+          </div>
+        </section>
+
         <section className="rounded-2xl bg-card border border-border p-2 grid grid-cols-2 gap-2">
           {([
             { value: "delivery", icon: Truck, label: "Entrega", detail: "30-50 min" },
@@ -136,7 +145,6 @@ export default function Checkout() {
           ))}
         </section>
 
-        {/* Dados */}
         <section className="rounded-2xl bg-card border border-border p-4 flex flex-col gap-3">
           <p className="font-display font-semibold text-sm flex items-center gap-2"><Zap className="h-4 w-4 text-brand-bright" /> Seus dados</p>
           <div>
@@ -165,7 +173,6 @@ export default function Checkout() {
           </div>
         </section>
 
-        {/* Pagamento */}
         <section className="rounded-2xl bg-card border border-border p-4 flex flex-col gap-3">
           <p className="font-display font-semibold text-sm">Forma de pagamento</p>
           <div className="flex flex-col gap-2">
@@ -183,18 +190,17 @@ export default function Checkout() {
           {payment === "cash" && (
             <div className="flex items-center gap-2 rounded-xl bg-background border border-border px-3.5 py-2.5">
               <Banknote className="h-4 w-4 text-muted-foreground" />
-              <input value={changeFor} onChange={(e) => setChangeFor(formatPhone(e.target.value))} placeholder="Troco para quanto?" inputMode="numeric" className="flex-1 bg-transparent text-sm focus:outline-none" />
+              <input value={changeFor} onChange={(e) => setChangeFor(e.target.value)} placeholder="Troco para quanto?" inputMode="decimal" className="flex-1 bg-transparent text-sm focus:outline-none" />
             </div>
           )}
           {payment === "pix" && (
             <div className="rounded-xl bg-background border border-border p-3 flex items-center gap-2">
               <QrCode className="h-4 w-4 text-brand-bright" />
-              <p className="text-xs text-muted-foreground">O PIX sera pago na confirmacao do pedido. Voce recebera os dados junto ao acompanhamento.</p>
+              <p className="text-xs text-muted-foreground">O PIX sera combinado na confirmacao do pedido. Voce acompanha tudo pela tela do pedido.</p>
             </div>
           )}
         </section>
 
-        {/* Resumo */}
         <section className="rounded-2xl bg-card border border-border p-4 flex flex-col gap-1.5">
           {items.map((i) => (
             <div key={i.cartId} className="flex justify-between text-sm">
