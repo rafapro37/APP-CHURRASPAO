@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { BellRing, ChevronLeft, Flame, Home, Menu, Tag, Ticket, User, UtensilsCrossed } from "lucide-react";
+import { BellRing, ChevronLeft, Download, Flame, Home, Menu, Tag, Ticket, User, UtensilsCrossed } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import ContactButtons from "@/components/ContactButtons";
 import { BRAND } from "@/lib/brand";
@@ -36,6 +36,56 @@ async function requestNotificationPermissionSafely() {
   } catch {
     // Android/Chrome pode bloquear notificacoes sem service worker. Evita derrubar o app.
   }
+}
+
+function InstallAppButton() {
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [installed, setInstalled] = useState(false);
+
+  useEffect(() => {
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || (window.navigator as any).standalone;
+    setInstalled(Boolean(isStandalone));
+
+    const onBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event);
+    };
+    const onInstalled = () => {
+      setInstalled(true);
+      setInstallPrompt(null);
+    };
+
+    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
+  }, []);
+
+  if (installed) {
+    return (
+      <div className="rounded-2xl border border-border bg-background/40 px-4 py-3 text-xs text-muted-foreground">
+        App instalado neste aparelho.
+      </div>
+    );
+  }
+
+  if (!installPrompt) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        await installPrompt.prompt();
+        setInstallPrompt(null);
+      }}
+      className="btn-press flex w-full items-center justify-center gap-2 rounded-2xl border border-brand/60 bg-brand px-4 py-3 text-sm font-bold text-white shadow-lg shadow-brand/25"
+    >
+      <Download className="h-4 w-4" />
+      Instalar app
+    </button>
+  );
 }
 
 export function BottomNav() {
@@ -95,6 +145,9 @@ export function ClientDrawer({ open, onClose }: { open: boolean; onClose: () => 
         <div className="mt-6 rounded-2xl border border-border bg-background/40 p-3">
           <p className="mb-2 font-display text-sm font-bold">Contato oficial</p>
           <ContactButtons compact />
+        </div>
+        <div className="mt-3">
+          <InstallAppButton />
         </div>
         </div>
       </aside>

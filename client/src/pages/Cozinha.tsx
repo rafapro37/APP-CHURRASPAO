@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Clock, Flame, CheckCircle2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Clock, Flame, CheckCircle2, BellRing, Volume2 } from "lucide-react";
 import { STATUS_LABELS } from "@/lib/brand";
 import { getOrders, groupOrderItems, subscribeToOrders, updateOrderStatus, type LocalOrder, type LocalOrderStatus } from "@/lib/localOrders";
 
@@ -15,10 +15,56 @@ async function setStatus(id: number | string, status: LocalOrderStatus, refresh:
   refresh();
 }
 
+function playKitchenAlert() {
+  try {
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    const context = new AudioContextClass();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+
+    oscillator.type = "square";
+    oscillator.frequency.setValueAtTime(880, context.currentTime);
+    oscillator.frequency.setValueAtTime(660, context.currentTime + 0.18);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    gain.gain.setValueAtTime(0.0001, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.28, context.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.55);
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.58);
+  } catch {
+    // O navegador pode bloquear audio sem acao do usuario.
+  }
+}
+
 export default function Cozinha() {
   const [orders, setOrders] = useState<LocalOrder[]>([]);
+  const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem("churraspao-kitchen-sound") === "1");
+  const [newOrderPulse, setNewOrderPulse] = useState(false);
+  const knownCodesRef = useRef<Set<string>>(new Set());
+  const firstLoadRef = useRef(true);
+
   const refresh = () => {
-    void getOrders().then(setOrders);
+    void getOrders().then((nextOrders) => {
+      const active = nextOrders.filter((order) => !["finished", "cancelled"].includes(order.status));
+      const activeCodes = new Set(active.map((order) => order.code));
+      const hasNewCode = active.some((order) => order.status === "new" && !knownCodesRef.current.has(order.code));
+
+      if (!firstLoadRef.current && hasNewCode) {
+        setNewOrderPulse(true);
+        window.setTimeout(() => setNewOrderPulse(false), 9000);
+        if (soundEnabled) {
+          playKitchenAlert();
+          window.setTimeout(playKitchenAlert, 650);
+        }
+      }
+
+      knownCodesRef.current = activeCodes;
+      firstLoadRef.current = false;
+      setOrders(nextOrders);
+    });
   };
 
   useEffect(() => {
@@ -29,7 +75,7 @@ export default function Cozinha() {
       window.clearInterval(timer);
       unsubscribe();
     };
-  }, []);
+  }, [soundEnabled]);
 
   const kitchenOrders = useMemo(
     () => orders.filter((order) => !["finished", "cancelled"].includes(order.status)).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()),
@@ -47,15 +93,42 @@ export default function Cozinha() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 px-4 py-4 backdrop-blur">
-        <div className="mx-auto max-w-6xl">
-          <h1 className="flex items-center gap-2 font-display text-2xl font-bold">
-            <Flame className="h-6 w-6 text-brand-bright" /> Cozinha
-          </h1>
-          <p className="text-sm text-muted-foreground">Pedidos em tempo real, identificados pelo nome do cliente.</p>
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+          <div>
+            <h1 className="flex items-center gap-2 font-display text-2xl font-bold">
+              <Flame className="h-6 w-6 text-brand-bright" /> Cozinha
+            </h1>
+            <p className="text-sm text-muted-foreground">Pedidos em tempo real, identificados pelo nome do cliente.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const next = !soundEnabled;
+              setSoundEnabled(next);
+              localStorage.setItem("churraspao-kitchen-sound", next ? "1" : "0");
+              if (next) playKitchenAlert();
+            }}
+            className={`flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold transition-colors ${soundEnabled ? "border-brand bg-brand text-white" : "border-border bg-card text-muted-foreground"}`}
+          >
+            <Volume2 className="h-4 w-4" />
+            {soundEnabled ? "Som ativo" : "Ativar som"}
+          </button>
         </div>
       </header>
 
       <section className="mx-auto max-w-6xl p-4">
+        {newOrderPulse && (
+          <div className="ready-toast mb-4 flex items-center gap-3 rounded-2xl border border-brand bg-brand/15 p-4 shadow-2xl shadow-brand/20">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand text-white">
+              <BellRing className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="font-display text-xl font-bold">Pedido novo na cozinha</p>
+              <p className="text-sm text-muted-foreground">Confira o card destacado em laranja.</p>
+            </div>
+          </div>
+        )}
+
         {kitchenOrders.length === 0 ? (
           <div className="rounded-2xl border border-border bg-card p-8 text-center">
             <CheckCircle2 className="mx-auto h-10 w-10 text-brand-bright" />
@@ -65,7 +138,7 @@ export default function Cozinha() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {kitchenOrders.map((order) => (
-              <article key={order.id} className={`rounded-2xl border p-4 ${order.status === "new" ? "border-brand bg-brand/10 ember-glow" : "border-border bg-card"}`}>
+              <article key={order.id} className={`rounded-2xl border p-4 ${order.status === "new" ? "ready-toast border-brand bg-brand/10 ember-glow" : "border-border bg-card"}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-bold text-brand-bright">PEDIDO {order.code}</p>
