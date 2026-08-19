@@ -22,14 +22,19 @@ function AdminMenu() {
   const [location] = useLocation();
 
   return (
-    <nav className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-col md:overflow-visible md:px-2 md:py-1">
+    <nav className="flex flex-col gap-2 px-2 py-2">
       {ADMIN_MENU.map((item) => {
         const isActive = item.path === "/admin" ? location === "/admin" : location.startsWith(item.path);
         const Icon = item.icon;
         return (
-          <Link key={item.path} href={item.path} className={`flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-3 text-xs font-semibold transition-colors md:h-auto md:rounded-lg md:py-2 md:text-sm ${isActive ? "bg-brand text-white" : "bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-foreground"}`}>
-            <Icon className="h-4 w-4" />
-            {item.label}
+          <Link
+            key={item.path}
+            href={item.path}
+            title={item.label}
+            className={`flex h-12 items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-colors md:h-auto md:justify-start md:rounded-lg md:px-3 md:py-2 md:text-sm ${isActive ? "bg-brand text-white" : "bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-foreground"}`}
+          >
+            <Icon className="h-5 w-5 shrink-0 md:h-4 md:w-4" />
+            <span className="hidden md:inline">{item.label}</span>
           </Link>
         );
       })}
@@ -41,11 +46,11 @@ export default function AdminLayout({ title, subtitle, children }: { title?: str
   const logo = getBrandLogo();
 
   return (
-    <div className="min-h-screen bg-background text-foreground md:flex">
-      <aside className="sticky top-0 z-30 border-b border-border bg-card md:min-h-screen md:w-64 md:shrink-0 md:border-b-0 md:border-r">
-        <div className="flex items-center gap-2 px-3 py-3 md:gap-3 md:px-4 md:py-4">
+    <div className="flex min-h-screen bg-background text-foreground">
+      <aside className="sticky top-0 z-30 h-screen w-[76px] shrink-0 overflow-y-auto border-r border-border bg-card md:w-64">
+        <div className="flex flex-col items-center gap-2 px-2 py-3 md:flex-row md:gap-3 md:px-4 md:py-4">
           <img src={logo} alt="CHURRASPAO E CIA" className="h-11 w-11 shrink-0 rounded-full object-contain ring-2 ring-brand/40 md:h-10 md:w-10" />
-          <div className="min-w-0 flex-1">
+          <div className="hidden min-w-0 flex-1 md:block">
             <p className="truncate font-display text-sm font-bold leading-tight">{BRAND.name}</p>
             <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-bright">Painel admin</p>
           </div>
@@ -54,9 +59,9 @@ export default function AdminLayout({ title, subtitle, children }: { title?: str
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-[98px] z-20 flex items-center justify-between border-b border-border bg-background/95 px-4 py-3 backdrop-blur md:top-0 md:px-6">
+        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-background/95 px-3 py-3 backdrop-blur md:px-6">
           <div className="min-w-0">
-            <h1 className="truncate font-display text-xl font-bold md:text-lg">{title ?? "Painel Administrativo"}</h1>
+            <h1 className="truncate font-display text-lg font-bold md:text-lg">{title ?? "Painel Administrativo"}</h1>
             {subtitle && <p className="truncate text-xs text-muted-foreground">{subtitle}</p>}
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -83,7 +88,7 @@ export default function AdminLayout({ title, subtitle, children }: { title?: str
             </DropdownMenu>
           </div>
         </header>
-        <main className="flex-1 p-3 pb-24 md:p-6 md:pb-8">{children}</main>
+        <main className="flex-1 p-3 pb-8 md:p-6">{children}</main>
       </div>
     </div>
   );
