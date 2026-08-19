@@ -7,6 +7,11 @@ import { useCart } from "@/contexts/CartContext";
 import { BRAND } from "@/lib/brand";
 import { getAllCategories, getAllProducts, getBrandLogo } from "@/lib/localCatalog";
 
+function isSoldOutStatus(status: unknown) {
+  const value = String(status ?? "available").trim().toLowerCase();
+  return value !== "available";
+}
+
 export default function Home() {
   const { add, count } = useCart();
   const [categories, setCategories] = useState(getAllCategories);
@@ -36,6 +41,8 @@ export default function Home() {
   const featured = products.filter((product) => product.isFeatured).slice(0, 8);
 
   const quickAdd = (product: (typeof products)[number]) => {
+    if (isSoldOutStatus(product.status)) return;
+
     add({
       productId: product.id,
       productName: product.name,

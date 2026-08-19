@@ -8,6 +8,11 @@ import { BRAND } from "@/lib/brand";
 import { getAllCategories, getAllProducts, getBrandLogo } from "@/lib/localCatalog";
 import { cn } from "@/lib/utils";
 
+function isSoldOutStatus(status: unknown) {
+  const value = String(status ?? "available").trim().toLowerCase();
+  return value !== "available";
+}
+
 export default function Cardapio() {
   const searchParams = useSearch();
   const initialCategory = useMemo(() => {
@@ -106,6 +111,7 @@ export default function Cardapio() {
                 <ProductCard
                   product={product as ProductSummary}
                   onAdd={() =>
+                    !isSoldOutStatus(product.status) &&
                     add({
                       productId: product.id,
                       productName: product.name,

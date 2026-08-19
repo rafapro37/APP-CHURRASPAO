@@ -94,7 +94,7 @@ export default function AdminProdutos() {
       price: String(product.price).replace(".", ","),
       categoryId: String(product.categoryId),
       shortDescription: product.shortDescription ?? "",
-      status: product.status,
+      status: product.status === "available" ? "available" : "soldOut",
       isFeatured: product.isFeatured,
       isOffer: product.isOffer,
     });
@@ -174,7 +174,6 @@ export default function AdminProdutos() {
         <div className="grid gap-2 rounded-xl border border-border bg-background p-3 text-sm">
           <select className="rounded-lg border border-border bg-card px-3 py-2 outline-none" value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as ProductForm["status"] })}>
             <option value="available">Disponível</option>
-            <option value="unavailable">Indisponível</option>
             <option value="soldOut">Esgotado</option>
           </select>
           <label className="flex items-center gap-2"><input type="checkbox" checked={form.isFeatured} onChange={(event) => setForm({ ...form, isFeatured: event.target.checked })} /> Destaque</label>
@@ -259,7 +258,7 @@ export default function AdminProdutos() {
                     <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{product.shortDescription || "Sem descrição"}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className="rounded-full bg-secondary px-2 py-1 text-[10px] uppercase text-muted-foreground">{product.status}</span>
+                    <span className="rounded-full bg-secondary px-2 py-1 text-[10px] uppercase text-muted-foreground">{product.status === "available" ? "Disponivel" : "Esgotado"}</span>
                     <span className="rounded-full bg-background px-2 py-1 text-[10px] text-muted-foreground">{product.salesCount ?? 0} vendas</span>
                   </div>
                 </div>

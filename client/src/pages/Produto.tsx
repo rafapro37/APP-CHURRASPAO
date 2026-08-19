@@ -9,6 +9,11 @@ import { formatBRL } from "@/lib/brand";
 import { getAllCategories, getAllProducts, type LocalProduct } from "@/lib/localCatalog";
 import { cn } from "@/lib/utils";
 
+function isSoldOutStatus(status: unknown) {
+  const value = String(status ?? "available").trim().toLowerCase();
+  return value !== "available";
+}
+
 export default function Produto() {
   const { id } = useParams<{ id: string }>();
   const productId = Number(id);
@@ -41,9 +46,10 @@ export default function Produto() {
   const promo = product && product.promoPrice != null && product.promoPrice > 0 && product.promoPrice < product.price ? product.promoPrice : product?.activePromo?.promoPrice;
   const unitPrice = promo ?? product?.price ?? 0;
   const total = Math.round(unitPrice * quantity * 100) / 100;
+  const isSoldOut = isSoldOutStatus(product?.status);
 
   const handleAdd = () => {
-    if (!product || product.price <= 0) return;
+    if (!product || product.price <= 0 || isSoldOutStatus(product.status)) return;
 
     add({
       productId: product.id,
@@ -100,7 +106,7 @@ export default function Produto() {
       <main className="mx-auto max-w-3xl px-4 pt-4">
         <div className="overflow-hidden rounded-3xl border border-border bg-[#050505]">
           {image ? (
-            <img src={image} alt={product.name} className="aspect-[4/3] w-full object-contain object-center p-2" />
+            <img src={image} alt={product.name} className={cn("aspect-[4/3] w-full object-contain object-center p-2", isSoldOut && "grayscale")} />
           ) : (
             <div className="flex aspect-[4/3] w-full items-center justify-center text-sm font-medium text-muted-foreground">Sem foto</div>
           )}
@@ -108,6 +114,7 @@ export default function Produto() {
 
         <section className="mt-4">
           <div className="flex flex-wrap gap-1.5">
+            {isSoldOut && <Badge className="bg-[#292929] text-white">Esgotado</Badge>}
             {(product.salesCount ?? 0) > 0 && <Badge>Mais pedido</Badge>}
             {product.isNew && <Badge className="bg-accent">Novidade</Badge>}
             {(product.isOffer || promo) && <Badge>Oferta</Badge>}
@@ -145,18 +152,26 @@ export default function Produto() {
       {product.price > 0 && (
         <div className="fixed inset-x-0 bottom-20 z-40 px-4 md:bottom-6">
           <div className="mx-auto flex max-w-3xl items-center gap-3 rounded-3xl border border-border bg-card p-3 shadow-2xl shadow-black/60">
-            <div className="flex items-center overflow-hidden rounded-xl border border-border">
-              <button onClick={() => setQuantity((value) => Math.max(1, value - 1))} className="btn-press p-2.5 transition-colors hover:bg-secondary" aria-label="Diminuir">
-                <Minus className="h-4 w-4" />
+            {isSoldOut ? (
+              <button disabled className="flex-1 rounded-2xl bg-secondary py-3.5 font-display font-bold uppercase tracking-wide text-muted-foreground">
+                Produto esgotado
               </button>
-              <span className="min-w-8 px-3 text-center font-display text-sm font-bold">{quantity}</span>
-              <button onClick={() => setQuantity((value) => value + 1)} className="btn-press p-2.5 transition-colors hover:bg-secondary" aria-label="Aumentar">
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
-            <button onClick={handleAdd} className="btn-press flex-1 rounded-2xl bg-brand py-3.5 font-display font-bold uppercase tracking-wide text-white transition-colors hover:bg-brand-bright">
-              Adicionar ao carrinho | {formatBRL(total)}
-            </button>
+            ) : (
+              <>
+                <div className="flex items-center overflow-hidden rounded-xl border border-border">
+                  <button onClick={() => setQuantity((value) => Math.max(1, value - 1))} className="btn-press p-2.5 transition-colors hover:bg-secondary" aria-label="Diminuir">
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="min-w-8 px-3 text-center font-display text-sm font-bold">{quantity}</span>
+                  <button onClick={() => setQuantity((value) => value + 1)} className="btn-press p-2.5 transition-colors hover:bg-secondary" aria-label="Aumentar">
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+                <button onClick={handleAdd} className="btn-press flex-1 rounded-2xl bg-brand py-3.5 font-display font-bold uppercase tracking-wide text-white transition-colors hover:bg-brand-bright">
+                  Adicionar ao carrinho | {formatBRL(total)}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

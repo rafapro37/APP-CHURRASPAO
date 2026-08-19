@@ -33,26 +33,34 @@ function NoPhoto() {
   );
 }
 
+function isSoldOutStatus(status: unknown) {
+  const value = String(status ?? "available").trim().toLowerCase();
+  return value !== "available";
+}
+
 export function ProductCard({ product, onAdd }: { product: ProductSummary; onAdd?: (p: ProductSummary) => void }) {
   const img = product.images?.[0]?.url;
   const promo = product.promoPrice != null && product.promoPrice > 0 && product.promoPrice < product.price ? product.promoPrice : product.activePromo?.promoPrice;
   const showStrike = !!promo;
   const showBestSeller = (product.salesCount ?? 0) > 0;
+  const isSoldOut = isSoldOutStatus(product.status);
 
   return (
-    <div className="group flex min-h-[236px] flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 hover:border-brand/50 hover:shadow-[0_8px_30px_rgba(217,101,8,0.16)] sm:min-h-[292px]">
+    <div className={cn("group flex min-h-[236px] flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 hover:border-brand/50 hover:shadow-[0_8px_30px_rgba(217,101,8,0.16)] sm:min-h-[292px]", isSoldOut && "opacity-75")}>
       <Link href={`/produto/${product.id}`} className="relative block aspect-[4/3] overflow-hidden bg-[#050505]">
         {img ? (
-          <img src={img} alt={product.name} className="h-full w-full object-contain object-center p-1" loading="lazy" />
+          <img src={img} alt={product.name} className={cn("h-full w-full object-contain object-center p-1", isSoldOut && "grayscale")} loading="lazy" />
         ) : (
           <NoPhoto />
         )}
         <div className="absolute left-1.5 top-1.5 flex flex-wrap gap-1">
+          {isSoldOut && <Badge className="bg-[#292929] text-white">Esgotado</Badge>}
           {showBestSeller && <Badge>Mais pedido</Badge>}
           {product.isNew && <Badge className="bg-accent">Novo</Badge>}
           {(product.isOffer || promo) && <Badge>Oferta</Badge>}
           {product.isExclusive && <Badge className="bg-secondary">Exclusivo</Badge>}
         </div>
+        {isSoldOut && <div className="absolute inset-x-0 bottom-0 bg-black/80 px-3 py-2 text-center font-display text-sm font-bold uppercase text-white">Esgotado</div>}
       </Link>
       <div className="flex flex-1 flex-col gap-1.5 p-2.5 sm:p-3.5">
         <Link href={`/produto/${product.id}`}>
@@ -61,7 +69,9 @@ export function ProductCard({ product, onAdd }: { product: ProductSummary; onAdd
         </Link>
         <div className="mt-auto flex items-end justify-between gap-2 pt-2">
           <div className="min-w-0">
-            {product.price <= 0 ? (
+            {isSoldOut ? (
+              <span className="font-display text-sm font-bold text-muted-foreground">Indisponivel agora</span>
+            ) : product.price <= 0 ? (
               <span className="font-display text-sm font-bold text-brand-bright">Monte no pedido</span>
             ) : (
               <>
@@ -70,7 +80,7 @@ export function ProductCard({ product, onAdd }: { product: ProductSummary; onAdd
               </>
             )}
           </div>
-          {onAdd && product.price > 0 && (
+          {onAdd && product.price > 0 && !isSoldOut && (
             <button onClick={() => onAdd(product)} className="btn-press flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-lg shadow-brand/30 transition-colors hover:bg-brand-bright sm:h-9 sm:w-9" aria-label={`Adicionar ${product.name}`}>
               <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>

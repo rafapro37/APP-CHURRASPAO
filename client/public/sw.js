@@ -24,10 +24,16 @@ self.addEventListener("push", (event) => {
       body,
       icon: "/brand/logo.png",
       badge: "/brand/logo.png",
-      vibrate: [700, 220, 700, 220, 900],
+      vibrate: [900, 250, 900, 250, 1200, 250, 1200],
       tag: data.tag || "churraspao-pedido-pronto",
+      renotify: true,
+      silent: false,
+      timestamp: Date.now(),
       data: { url },
-      requireInteraction: true
+      requireInteraction: true,
+      actions: [
+        { action: "open", title: "Ver pedido" }
+      ]
     })
   );
 });

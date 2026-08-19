@@ -7,6 +7,11 @@ import { Badge } from "@/components/ProductCard";
 import { useCart } from "@/contexts/CartContext";
 import { getAllProducts, type LocalProduct } from "@/lib/localCatalog";
 
+function isSoldOutStatus(status: unknown) {
+  const value = String(status ?? "available").trim().toLowerCase();
+  return value !== "available";
+}
+
 export default function Ofertas() {
   const { add } = useCart();
   const [products, setProducts] = useState(getAllProducts);
@@ -31,7 +36,7 @@ export default function Ofertas() {
   );
 
   const quickAdd = (product: LocalProduct) => {
-    if (product.price <= 0) return;
+    if (product.price <= 0 || isSoldOutStatus(product.status)) return;
     add({
       productId: product.id,
       productName: product.name,
@@ -81,16 +86,18 @@ export default function Ofertas() {
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
             {offers.map((product, index) => {
               const promoPrice = product.promoPrice && product.promoPrice > 0 ? product.promoPrice : product.price;
+              const isSoldOut = isSoldOutStatus(product.status);
               return (
                 <div key={product.id} style={{ animationDelay: `${index * 40}ms` }} className="fade-up">
-                  <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-brand/50">
+                  <div className={`group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-brand/50 ${isSoldOut ? "opacity-75" : ""}`}>
                     <Link href={`/produto/${product.id}`} className="relative block aspect-[4/3] overflow-hidden bg-secondary">
                       {product.images?.[0]?.url ? (
-                        <img src={product.images[0].url} alt={product.name} className="h-full w-full object-contain object-center p-1" loading="lazy" />
+                        <img src={product.images[0].url} alt={product.name} className={`h-full w-full object-contain object-center p-1 ${isSoldOut ? "grayscale" : ""}`} loading="lazy" />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">Sem foto</div>
                       )}
                       <Badge className="absolute left-2 top-2">Oferta</Badge>
+                      {isSoldOut && <Badge className="absolute right-2 top-2 bg-[#292929] text-white">Esgotado</Badge>}
                     </Link>
                     <div className="flex flex-1 flex-col p-3.5">
                       <Link href={`/produto/${product.id}`}>
@@ -101,8 +108,8 @@ export default function Ofertas() {
                         {product.promoPrice && product.promoPrice > 0 && product.promoPrice < product.price && <span className="block text-[11px] text-muted-foreground line-through">{formatBRL(product.price)}</span>}
                         <span className="font-display text-lg font-bold text-brand-bright">{formatBRL(promoPrice)}</span>
                       </div>
-                      <button onClick={() => quickAdd(product)} className="btn-press mt-2 rounded-xl bg-brand py-2 text-xs font-bold uppercase text-white transition-colors hover:bg-brand-bright">
-                        Adicionar
+                      <button disabled={isSoldOut} onClick={() => quickAdd(product)} className={`btn-press mt-2 rounded-xl py-2 text-xs font-bold uppercase transition-colors ${isSoldOut ? "bg-secondary text-muted-foreground" : "bg-brand text-white hover:bg-brand-bright"}`}>
+                        {isSoldOut ? "Esgotado" : "Adicionar"}
                       </button>
                     </div>
                   </div>

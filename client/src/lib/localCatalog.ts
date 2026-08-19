@@ -43,13 +43,21 @@ type CloudProductRow = {
   price: number;
   short_description: string | null;
   description: string | null;
-  status: LocalProduct["status"];
+  status: string | null;
   is_offer: boolean | null;
   is_featured: boolean | null;
   is_new: boolean | null;
   is_exclusive: boolean | null;
   image_url: string | null;
 };
+
+export function normalizeProductStatus(status: unknown): LocalProduct["status"] {
+  const value = String(status ?? "available").trim().toLowerCase();
+
+  if (value === "soldout" || value === "sold_out" || value === "sold-out" || value === "esgotado") return "soldOut";
+  if (value === "unavailable" || value === "indisponivel" || value === "indisponível" || value === "inactive") return "unavailable";
+  return "available";
+}
 
 function readJson<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -92,7 +100,7 @@ function mapCloudProduct(row: CloudProductRow): LocalProduct {
     price: Number(row.price ?? 0),
     shortDescription: row.short_description ?? "",
     description: row.description ?? row.short_description ?? "",
-    status: row.status ?? "available",
+    status: normalizeProductStatus(row.status),
     isBestSeller: false,
     isNew: Boolean(row.is_new),
     isOffer: Boolean(row.is_offer),
@@ -213,7 +221,7 @@ export function getSavedProducts(): LocalProduct[] {
     }
   }
 
-  return products.map((product) => ({ ...product, images: [] }));
+  return products.map((product) => ({ ...product, status: normalizeProductStatus(product.status), images: [] }));
 }
 
 export function getLocalProducts(): LocalProduct[] {
@@ -227,7 +235,7 @@ function normalizeBaseProducts(): LocalProduct[] {
     ...withPersistentImage(product),
     description: product.description ?? product.shortDescription ?? "",
     shortDescription: product.shortDescription ?? "",
-    status: product.status as LocalProduct["status"],
+    status: normalizeProductStatus(product.status),
     promoPrice: product.promoPrice ?? null,
     activePromo: null,
     isBestSeller: (sales[product.id] ?? 0) > 0,
@@ -256,7 +264,7 @@ export function getAdminProducts(): LocalProduct[] {
 }
 
 export function getAllProducts() {
-  return getAdminProducts().filter((product) => product.status === "available");
+  return getAdminProducts();
 }
 
 export async function syncCatalogFromCloud() {
@@ -356,7 +364,7 @@ export async function saveLocalProduct(input: {
     price: input.price,
     shortDescription: input.shortDescription,
     description: input.shortDescription,
-    status: input.status,
+    status: normalizeProductStatus(input.status),
     isBestSeller: input.isBestSeller,
     isNew: existing?.isNew ?? false,
     isOffer: input.isOffer,
