@@ -9,9 +9,16 @@ export default function Entrada() {
   const [logo] = useState(getBrandLogo);
 
   return (
-    <main className="charcoal-texture flex min-h-screen flex-col bg-[#0B0B0B] text-white">
-      <section className="mx-auto flex w-full max-w-[430px] flex-1 flex-col justify-center px-5 py-7">
-        <div className="rounded-[28px] border border-brand/35 bg-card/70 p-5 shadow-[0_26px_70px_rgba(217,101,8,0.16)] backdrop-blur">
+    <main className="charcoal-texture relative flex min-h-screen flex-col overflow-hidden bg-[#0B0B0B] text-white">
+      <img
+        src={logo}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[620px] w-[620px] max-w-none -translate-x-1/2 -translate-y-1/2 rounded-full object-contain opacity-[0.09] blur-[1px]"
+      />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(11,11,11,0.08)_38%,rgba(11,11,11,0.92)_78%)]" />
+      <section className="relative z-10 mx-auto flex w-full max-w-[430px] flex-1 flex-col justify-center px-5 py-7">
+        <div className="rounded-[28px] border border-brand/35 bg-card/75 p-5 shadow-[0_26px_70px_rgba(217,101,8,0.16)] backdrop-blur">
           <div className="text-center">
             <img src={logo} alt="CHURRASPAO E CIA" className="mx-auto h-36 w-36 rounded-full object-cover ring-2 ring-white shadow-[0_0_46px_rgba(244,122,11,0.42)]" />
             <p className="mt-4 font-semibold text-brand-bright">Sabor que conquista</p>
