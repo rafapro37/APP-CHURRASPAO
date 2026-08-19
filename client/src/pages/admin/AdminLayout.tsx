@@ -61,10 +61,14 @@ export default function AdminLayout({ title, subtitle, children }: { title?: str
         <AdminMenu />
       </aside>
 
-      {drawerOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
-          <button type="button" aria-label="Fechar menu" className="absolute inset-0 bg-black/70" onClick={() => setDrawerOpen(false)} />
-          <aside className="relative flex h-full w-[82vw] max-w-80 flex-col overflow-y-auto border-r border-border bg-card shadow-2xl">
+      <div className={`fixed inset-0 z-40 md:hidden ${drawerOpen ? "pointer-events-auto" : "pointer-events-none"}`}>
+        <button
+          type="button"
+          aria-label="Fechar menu"
+          className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity ${drawerOpen ? "opacity-100" : "opacity-0"}`}
+          onClick={() => setDrawerOpen(false)}
+        />
+        <aside className={`relative flex h-full w-[82vw] max-w-80 flex-col overflow-y-auto border-r border-border bg-[#111] text-white shadow-2xl shadow-black/70 transition-transform duration-200 ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}>
             <div className="flex items-center gap-3 border-b border-border px-4 py-4">
               <img src={logo} alt="CHURRASPAO E CIA" className="h-14 w-14 shrink-0 rounded-full object-contain ring-2 ring-brand/40" />
               <div className="min-w-0 flex-1">
@@ -74,7 +78,7 @@ export default function AdminLayout({ title, subtitle, children }: { title?: str
               <button
                 type="button"
                 onClick={() => setDrawerOpen(false)}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-secondary text-muted-foreground"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-secondary text-muted-foreground hover:border-brand"
                 aria-label="Fechar menu"
               >
                 <X className="h-5 w-5" />
@@ -82,8 +86,7 @@ export default function AdminLayout({ title, subtitle, children }: { title?: str
             </div>
             <AdminMenu compact onNavigate={() => setDrawerOpen(false)} />
           </aside>
-        </div>
-      )}
+      </div>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-background/95 px-3 py-3 backdrop-blur md:px-6">
