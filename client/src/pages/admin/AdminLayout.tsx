@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Flame, UtensilsCrossed, ListOrdered, Ticket, Wallet, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, Flame, UtensilsCrossed, ListOrdered, Ticket, Wallet, Users, LogOut, BrainCircuit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -15,6 +15,7 @@ const ADMIN_MENU = [
   { path: "/admin/promocoes", label: "Promocoes", icon: Ticket },
   { path: "/admin/cupons", label: "Cupons", icon: Wallet },
   { path: "/admin/clientes", label: "Clientes", icon: Users },
+  { path: "/admin/gestao", label: "Gestao", icon: BrainCircuit },
 ];
 
 function AdminMenu() {

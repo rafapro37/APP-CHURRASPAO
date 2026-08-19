@@ -7,6 +7,7 @@ import AdminCategorias from "./AdminCategorias";
 import AdminPromocoes from "./AdminPromocoes";
 import AdminCupons from "./AdminCupons";
 import AdminClientes from "./AdminClientes";
+import AdminGestao from "./AdminGestao";
 
 export default function AdminRouter() {
   return (
@@ -19,6 +20,7 @@ export default function AdminRouter() {
         <Route path="/admin/promocoes" component={AdminPromocoes} />
         <Route path="/admin/cupons" component={AdminCupons} />
         <Route path="/admin/clientes" component={AdminClientes} />
+        <Route path="/admin/gestao" component={AdminGestao} />
       </Switch>
     </ProtectedAccess>
   );

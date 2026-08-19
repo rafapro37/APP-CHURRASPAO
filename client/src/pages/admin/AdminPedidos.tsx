@@ -1,12 +1,29 @@
 import { useEffect, useState } from "react";
+import { Archive, RotateCcw } from "lucide-react";
 import AdminLayout from "./AdminLayout";
 import { formatBRL, STATUS_LABELS } from "@/lib/brand";
 import { getOrders, groupOrderItems, subscribeToOrders, updateOrderStatus, type LocalOrder, type LocalOrderStatus } from "@/lib/localOrders";
 
 const STATUS: LocalOrderStatus[] = ["new", "accepted", "preparing", "ready", "delivering", "finished", "cancelled"];
+const ARCHIVED_ORDERS_KEY = "churraspao-admin-archived-orders";
+
+function readArchivedOrders() {
+  if (typeof window === "undefined") return [];
+  try {
+    return (JSON.parse(localStorage.getItem(ARCHIVED_ORDERS_KEY) ?? "[]") as string[]).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function writeArchivedOrders(codes: string[]) {
+  localStorage.setItem(ARCHIVED_ORDERS_KEY, JSON.stringify(Array.from(new Set(codes))));
+}
 
 export default function AdminPedidos() {
   const [orders, setOrders] = useState<LocalOrder[]>([]);
+  const [archivedCodes, setArchivedCodes] = useState<string[]>(readArchivedOrders);
+  const [showArchived, setShowArchived] = useState(false);
 
   const refresh = () => {
     void getOrders().then(setOrders);
@@ -21,16 +38,49 @@ export default function AdminPedidos() {
     };
   }, []);
 
+  const archiveOrder = (code: string) => {
+    const next = Array.from(new Set([...archivedCodes, code]));
+    writeArchivedOrders(next);
+    setArchivedCodes(next);
+  };
+
+  const restoreOrder = (code: string) => {
+    const next = archivedCodes.filter((item) => item !== code);
+    writeArchivedOrders(next);
+    setArchivedCodes(next);
+  };
+
+  const archivedSet = new Set(archivedCodes);
+  const visibleOrders = orders.filter((order) => !archivedSet.has(order.code));
+  const archivedOrders = orders.filter((order) => archivedSet.has(order.code));
+  const displayedOrders = showArchived ? archivedOrders : visibleOrders;
+
   return (
     <AdminLayout title="Pedidos" subtitle="Pedidos recebidos em tempo real">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3">
+        <div>
+          <p className="font-display text-lg font-bold">{showArchived ? "Pedidos removidos da lista" : "Pedidos ativos no gerenciamento"}</p>
+          <p className="text-xs text-muted-foreground">
+            Pedidos finalizados podem ser removidos da lista sem apagar o historico do sistema.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowArchived((value) => !value)}
+          className="rounded-xl border border-border bg-secondary px-4 py-2 text-xs font-bold text-foreground transition-colors hover:border-brand/60 hover:text-brand-bright"
+        >
+          {showArchived ? "Ver pedidos ativos" : `Ver removidos (${archivedOrders.length})`}
+        </button>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {orders.length === 0 && (
+        {displayedOrders.length === 0 && (
           <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
-            Nenhum pedido ainda. Faça uma simulação pelo app do cliente.
+            {showArchived ? "Nenhum pedido removido da lista." : "Nenhum pedido ainda. Faca uma simulacao pelo app do cliente."}
           </div>
         )}
 
-        {orders.map((order) => (
+        {displayedOrders.map((order) => (
           <article key={order.id} className={`rounded-2xl border p-4 ${order.status === "new" ? "border-brand bg-brand/10 ember-glow" : "border-border bg-card"}`}>
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -72,6 +122,30 @@ export default function AdminPedidos() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div className="mt-3 flex justify-end">
+              {showArchived ? (
+                <button
+                  type="button"
+                  onClick={() => restoreOrder(order.code)}
+                  className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-xs font-bold text-muted-foreground transition-colors hover:border-brand/60 hover:text-brand-bright"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Restaurar
+                </button>
+              ) : (
+                (order.status === "finished" || order.status === "cancelled") && (
+                  <button
+                    type="button"
+                    onClick={() => archiveOrder(order.code)}
+                    className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-xs font-bold text-muted-foreground transition-colors hover:border-brand/60 hover:text-brand-bright"
+                  >
+                    <Archive className="h-4 w-4" />
+                    Remover da lista
+                  </button>
+                )
+              )}
             </div>
           </article>
         ))}
