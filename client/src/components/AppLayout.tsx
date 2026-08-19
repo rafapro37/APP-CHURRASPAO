@@ -41,6 +41,7 @@ async function requestNotificationPermissionSafely() {
 function InstallAppButton() {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [installed, setInstalled] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches || (window.navigator as any).standalone;
@@ -71,20 +72,31 @@ function InstallAppButton() {
     );
   }
 
-  if (!installPrompt) return null;
-
   return (
-    <button
-      type="button"
-      onClick={async () => {
-        await installPrompt.prompt();
-        setInstallPrompt(null);
-      }}
-      className="btn-press flex w-full items-center justify-center gap-2 rounded-2xl border border-brand/60 bg-brand px-4 py-3 text-sm font-bold text-white shadow-lg shadow-brand/25"
-    >
-      <Download className="h-4 w-4" />
-      Instalar app
-    </button>
+    <div className="rounded-2xl border border-border bg-background/40 p-3">
+      <button
+        type="button"
+        onClick={async () => {
+          if (installPrompt) {
+            await installPrompt.prompt();
+            setInstallPrompt(null);
+            return;
+          }
+
+          setShowHelp((value) => !value);
+        }}
+        className="btn-press flex w-full items-center justify-center gap-2 rounded-2xl border border-brand/60 bg-brand px-4 py-3 text-sm font-bold text-white shadow-lg shadow-brand/25"
+      >
+        <Download className="h-4 w-4" />
+        Baixar app
+      </button>
+      {showHelp && (
+        <div className="mt-3 rounded-xl border border-border bg-[#0B0B0B] p-3 text-xs leading-relaxed text-muted-foreground">
+          <p className="font-semibold text-white">Como instalar no celular:</p>
+          <p className="mt-1">No Chrome, toque nos tres pontinhos do navegador e escolha "Adicionar a tela inicial" ou "Instalar app".</p>
+        </div>
+      )}
+    </div>
   );
 }
 
