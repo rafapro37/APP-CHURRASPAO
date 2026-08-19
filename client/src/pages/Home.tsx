@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { ArrowRight, Flame, MapPin, Search, ShoppingBag, Sparkles } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
+import ContactButtons from "@/components/ContactButtons";
 import { ProductCard } from "@/components/ProductCard";
 import { useCart } from "@/contexts/CartContext";
 import { BRAND } from "@/lib/brand";
@@ -137,8 +138,14 @@ export default function Home() {
       </section>
 
       <footer className="mx-auto w-full max-w-[430px] px-4 pb-4 pt-8 md:max-w-5xl">
-        <div className="rounded-2xl border border-border bg-card px-4 py-3 text-center text-xs text-muted-foreground">
-          Delivery: (11) 98837-5507 | @churraspaoecia
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <p className="text-center font-display text-lg font-bold">Fale com o Churraspao</p>
+          <p className="mt-1 text-center text-xs text-muted-foreground">
+            Delivery: {BRAND.whatsappLabel} | {BRAND.instagramLabel}
+          </p>
+          <div className="mt-3">
+            <ContactButtons compact />
+          </div>
         </div>
       </footer>
 

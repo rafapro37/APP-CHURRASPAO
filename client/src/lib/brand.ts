@@ -3,6 +3,10 @@ export const BRAND = {
   slogan: "Churrasco de verdade, do nosso jeito.",
   logo: "/brand/logo.png",
   heroBanner: "/brand/hero-banner.png",
+  whatsapp: "5511988375507",
+  whatsappLabel: "(11) 98837-5507",
+  instagram: "https://www.instagram.com/churraspaoecia/?__pwa=1#",
+  instagramLabel: "@churraspaoecia",
 };
 
 export const PRODUCT_IMAGES = {

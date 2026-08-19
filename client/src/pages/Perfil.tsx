@@ -3,7 +3,8 @@ import { Heart, Flame, Award, Clock, LogOut, User as UserIcon, ChevronRight } fr
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { AppLayout } from "@/components/AppLayout";
-import { formatBRL } from "@/lib/brand";
+import ContactButtons from "@/components/ContactButtons";
+import { BRAND, formatBRL } from "@/lib/brand";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 
@@ -100,6 +101,16 @@ export default function Perfil() {
             <span className="flex-1 text-sm font-semibold">Cardápio completo</span>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Link>
+        </div>
+
+        <div className="rounded-2xl bg-card border border-border p-4">
+          <p className="font-display text-lg font-bold">Contato oficial</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            WhatsApp {BRAND.whatsappLabel} | Instagram {BRAND.instagramLabel}
+          </p>
+          <div className="mt-3">
+            <ContactButtons compact />
+          </div>
         </div>
 
         <p className="text-center text-xs text-muted-foreground pb-4">

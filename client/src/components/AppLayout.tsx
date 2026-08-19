@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { BellRing, ChevronLeft, Flame, Home, Menu, Tag, Ticket, User, UtensilsCrossed } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
+import ContactButtons from "@/components/ContactButtons";
 import { BRAND } from "@/lib/brand";
 import { getBrandLogo } from "@/lib/localCatalog";
 import { subscribeToReadyOrderAlerts, type LocalOrder } from "@/lib/localOrders";
@@ -91,6 +92,10 @@ export function ClientDrawer({ open, onClose }: { open: boolean; onClose: () => 
             );
           })}
         </nav>
+        <div className="mt-6 rounded-2xl border border-border bg-background/40 p-3">
+          <p className="mb-2 font-display text-sm font-bold">Contato oficial</p>
+          <ContactButtons compact />
+        </div>
         </div>
       </aside>
     </>

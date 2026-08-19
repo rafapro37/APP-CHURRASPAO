@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { ArrowRight, Clock, MapPin, ShieldCheck } from "lucide-react";
+import ContactButtons from "@/components/ContactButtons";
 import { BRAND } from "@/lib/brand";
 import { getBrandLogo } from "@/lib/localCatalog";
 import { useState } from "react";
@@ -52,6 +53,10 @@ export default function Entrada() {
           <Link href="/cardapio" className="btn-press mt-4 flex items-center justify-center gap-2 rounded-2xl bg-brand px-6 py-4 font-display text-base font-bold uppercase tracking-wide text-white shadow-2xl shadow-brand/30">
             Fazer pedido <ArrowRight className="h-5 w-5" />
           </Link>
+
+          <div className="mt-3">
+            <ContactButtons compact />
+          </div>
         </div>
       </section>
     </main>
