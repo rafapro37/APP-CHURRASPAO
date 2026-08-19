@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Flame, UtensilsCrossed, ListOrdered, Ticket, Wallet, Users, LogOut, BrainCircuit } from "lucide-react";
+import { LayoutDashboard, Flame, UtensilsCrossed, ListOrdered, Ticket, Wallet, Users, LogOut, BrainCircuit, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -18,11 +19,11 @@ const ADMIN_MENU = [
   { path: "/admin/gestao", label: "Gestao", icon: BrainCircuit },
 ];
 
-function AdminMenu() {
+function AdminMenu({ compact = false, onNavigate }: { compact?: boolean; onNavigate?: () => void }) {
   const [location] = useLocation();
 
   return (
-    <nav className="flex flex-col gap-2 px-2 py-2">
+    <nav className={`flex flex-col gap-2 ${compact ? "px-4 py-4" : "px-2 py-2"}`}>
       {ADMIN_MENU.map((item) => {
         const isActive = item.path === "/admin" ? location === "/admin" : location.startsWith(item.path);
         const Icon = item.icon;
@@ -31,10 +32,11 @@ function AdminMenu() {
             key={item.path}
             href={item.path}
             title={item.label}
-            className={`flex h-12 items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-colors md:h-auto md:justify-start md:rounded-lg md:px-3 md:py-2 md:text-sm ${isActive ? "bg-brand text-white" : "bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-foreground"}`}
+            onClick={onNavigate}
+            className={`flex h-12 items-center gap-3 rounded-xl px-4 text-sm font-semibold transition-colors ${compact ? "justify-start" : "justify-start md:h-auto md:rounded-lg md:px-3 md:py-2"} ${isActive ? "bg-brand text-white" : "bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-foreground"}`}
           >
             <Icon className="h-5 w-5 shrink-0 md:h-4 md:w-4" />
-            <span className="hidden md:inline">{item.label}</span>
+            <span>{item.label}</span>
           </Link>
         );
       })}
@@ -44,13 +46,14 @@ function AdminMenu() {
 
 export default function AdminLayout({ title, subtitle, children }: { title?: string; subtitle?: string; children: React.ReactNode }) {
   const logo = getBrandLogo();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
-      <aside className="sticky top-0 z-30 h-screen w-[76px] shrink-0 overflow-y-auto border-r border-border bg-card md:w-64">
-        <div className="flex flex-col items-center gap-2 px-2 py-3 md:flex-row md:gap-3 md:px-4 md:py-4">
+      <aside className="sticky top-0 z-30 hidden h-screen w-64 shrink-0 overflow-y-auto border-r border-border bg-card md:block">
+        <div className="flex items-center gap-3 px-4 py-4">
           <img src={logo} alt="CHURRASPAO E CIA" className="h-11 w-11 shrink-0 rounded-full object-contain ring-2 ring-brand/40 md:h-10 md:w-10" />
-          <div className="hidden min-w-0 flex-1 md:block">
+          <div className="min-w-0 flex-1">
             <p className="truncate font-display text-sm font-bold leading-tight">{BRAND.name}</p>
             <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-bright">Painel admin</p>
           </div>
@@ -58,11 +61,45 @@ export default function AdminLayout({ title, subtitle, children }: { title?: str
         <AdminMenu />
       </aside>
 
+      {drawerOpen && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <button type="button" aria-label="Fechar menu" className="absolute inset-0 bg-black/70" onClick={() => setDrawerOpen(false)} />
+          <aside className="relative flex h-full w-[82vw] max-w-80 flex-col overflow-y-auto border-r border-border bg-card shadow-2xl">
+            <div className="flex items-center gap-3 border-b border-border px-4 py-4">
+              <img src={logo} alt="CHURRASPAO E CIA" className="h-14 w-14 shrink-0 rounded-full object-contain ring-2 ring-brand/40" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-display text-base font-bold leading-tight">{BRAND.name}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-bright">Painel admin</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(false)}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-secondary text-muted-foreground"
+                aria-label="Fechar menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <AdminMenu compact onNavigate={() => setDrawerOpen(false)} />
+          </aside>
+        </div>
+      )}
+
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-background/95 px-3 py-3 backdrop-blur md:px-6">
-          <div className="min-w-0">
-            <h1 className="truncate font-display text-lg font-bold md:text-lg">{title ?? "Painel Administrativo"}</h1>
+          <div className="flex min-w-0 items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-foreground md:hidden"
+              aria-label="Abrir menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <div className="min-w-0">
+              <h1 className="truncate font-display text-lg font-bold md:text-lg">{title ?? "Painel Administrativo"}</h1>
             {subtitle && <p className="truncate text-xs text-muted-foreground">{subtitle}</p>}
+            </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <DropdownMenu>
