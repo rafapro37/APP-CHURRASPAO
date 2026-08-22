@@ -6,6 +6,11 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
 });
 
+self.addEventListener("fetch", (event) => {
+  if (event.request.mode !== "navigate") return;
+  event.respondWith(fetch(event.request).catch(() => caches.match("/")));
+});
+
 self.addEventListener("push", (event) => {
   let data = {};
 
@@ -22,8 +27,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(title, {
       body,
-      icon: "/brand/logo.png",
-      badge: "/brand/logo.png",
+      icon: "/brand/icon-192.png",
+      badge: "/brand/icon-192.png",
       vibrate: [900, 250, 900, 250, 1200, 250, 1200],
       tag: data.tag || "churraspao-pedido-pronto",
       renotify: true,

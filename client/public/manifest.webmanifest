@@ -2,12 +2,18 @@
   "name": "CHURRASPAO E CIA",
   "short_name": "Churraspao",
   "description": "App oficial de pedidos do CHURRASPAO E CIA.",
-  "start_url": "/",
+  "id": "/?app=churraspao",
+  "start_url": "/?app=churraspao",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#0B0B0B",
   "theme_color": "#0B0B0B",
   "orientation": "portrait",
+  "categories": ["food", "shopping"],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
   "icons": [
     {
       "src": "/brand/icon-192.png",

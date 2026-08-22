@@ -6,6 +6,8 @@ const PUSH_SUPPORTED =
   "PushManager" in window &&
   "Notification" in window;
 
+const SERVICE_WORKER_SUPPORTED = typeof window !== "undefined" && "serviceWorker" in navigator;
+
 const env = import.meta.env as Record<string, string | undefined>;
 const VAPID_PUBLIC_KEY = env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? env.VITE_VAPID_PUBLIC_KEY ?? "";
 
@@ -27,10 +29,10 @@ export function canUsePushNotifications() {
 }
 
 export async function registerServiceWorker() {
-  if (!PUSH_SUPPORTED) return null;
+  if (!SERVICE_WORKER_SUPPORTED) return null;
 
   try {
-    return await navigator.serviceWorker.register("/sw.js");
+    return await navigator.serviceWorker.register("/sw.js", { scope: "/" });
   } catch (error) {
     console.warn("[Churraspao] Nao foi possivel registrar o app no celular:", error);
     return null;
@@ -94,8 +96,8 @@ export async function showReadyNotification(title: string, body: string, url: st
   try {
     await registration.showNotification(title, {
       body,
-      icon: "/brand/logo.png",
-      badge: "/brand/logo.png",
+      icon: "/brand/icon-192.png",
+      badge: "/brand/icon-192.png",
       tag: "churraspao-pedido-pronto",
       data: { url },
       vibrate: [700, 220, 700, 220, 900],
